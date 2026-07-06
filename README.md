@@ -14,10 +14,9 @@ Board, numbers, ports, **and two balanced starting settlements + roads for every
 ![Dependencies](https://img.shields.io/badge/runtime%20deps-0-7d8494)
 ![Single file](https://img.shields.io/badge/one-index.html-d9a83c)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.png">
-  <img src="docs/assets/hero-light.png" alt="Harbormaster generating a balanced 6-player Catan board with per-player starting settlements, roads, ports, and a fairness readout" width="880">
-</picture>
+<img src="docs/assets/demo.gif" alt="Clicking New board repeatedly generates fresh, balanced 6-player Catan boards, each with fair per-player starting settlements and a balanced-start readout" width="880">
+
+<sub><i>Every click deals a fresh board and a fair set of starting settlements. The ±0.5 badge is the gap between the best and worst player.</i></sub>
 
 </div>
 
