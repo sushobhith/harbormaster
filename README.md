@@ -32,7 +32,7 @@ Every online generator will hand you a *board*. Not one of them tells each playe
 
 - 🎲 A balanced board — no clustered red numbers, no resource deserts, even pip spread.
 - ⚓ **Fixed ports read off a real physical frame**, so the screen matches the wood on your table.
-- ⬡ **Two starting settlements and two roads per player**, matched so nobody starts ahead.
+- ⬡ **Two starting settlements and two roads per player**, matched so nobody starts ahead. Or flip to **Board only** and place your own, if you like the placement duel.
 - 🥇 A suggested turn order that hands first move to the weakest hand.
 - 🔗 A seed in the URL, so you send one link and everyone sees the identical table.
 
@@ -44,6 +44,7 @@ No signup. No app. One HTML file. Works on the phone that is already on the tabl
 
 | | |
 |---|---|
+| **Two modes** | *Fair settlements* deals everyone their spots; *Board only* gives a balanced board and lets you draft. |
 | **3 to 6 players** | Official 19-hex base board and the 30-hex 5–6 player extension. |
 | **Fair settlements** | Every player gets two spots under the distance rule, matched by *start value*. |
 | **Starting roads** | Each road points at the best legal expansion. Weakest hands get first pick. |

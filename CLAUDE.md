@@ -60,6 +60,11 @@ One `<script>` IIFE, sections in order:
    since pre-assignment removes the snake draft).
 8. **Render/panel** — SVG board + per-player cards. `renderPanel` shows pips, port bonus,
    per-settlement hex chips, road targets, coverage, turn.
+   **Two modes** (`state.mode`, toggle in toolbar, `&m=board` in hash): `fair` (default,
+   pre-assigns settlements/roads/turn order) and `board` (balanced board + ports only, players
+   draft their own — `render(...,null)` skips settlements/roads, `renderBoardPanel()` replaces
+   the aside, reroll + method cards hidden). Added 2026-07-07 in response to r/Catan feedback
+   that placement is core skill; board-only mode keeps the board balance without removing the draft.
 9. **Test hook** — `window.__hm.run(seed, players)` drives the real pipeline and returns
    raw board data. This is what the test harness uses; don't remove it.
 

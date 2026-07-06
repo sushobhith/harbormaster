@@ -182,6 +182,11 @@
     <button data-n="3">3</button><button data-n="4" aria-pressed="true">4</button>
     <button data-n="5">5</button><button data-n="6">6</button>
   </div>
+  <span class="lbl">Setup</span>
+  <div class="seg" id="mode" role="group" aria-label="Setup mode">
+    <button data-mode="fair" aria-pressed="true">Fair settlements</button>
+    <button data-mode="board">Board only</button>
+  </div>
   <button class="btn primary" id="newBoard">New board</button>
   <button class="btn" id="reroll">Re-draw settlements</button>
   <button class="btn" id="copy">Copy link</button>
@@ -209,7 +214,7 @@
   <aside>
     <div class="card fair" id="fairCard"></div>
     <div id="playerCards" style="display:flex;flex-direction:column;gap:.75rem"></div>
-    <div class="card method">
+    <div class="card method" id="methodCard">
       <b>Cheat sheet</b>
       <ul>
         <li><b>⌂ row</b> = one settlement. Chips = the hexes it collects from
@@ -545,6 +550,7 @@ function render(geom,resArr,num,ports,placement){
       fill:"var(--token-ink)"});
     t.textContent=pt.type==="any"?"3:1":"2:1";
   }
+  if(!placement)return; // board-only mode: no settlements/roads
   // starting roads (under the houses)
   placement.pairs.forEach((pair,pi)=>{
     const[,color]=PLAYERCOLORS[pi];
@@ -618,9 +624,25 @@ function renderPanel(geom,resArr,num,portMap,placement){
       (sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)} pips each ·
       <b>${starter} starts first</b>, then weakest to strongest</small></div>`;
 }
+function renderBoardPanel(){
+  document.getElementById("fairCard").innerHTML=
+    `<span class="big">⚓</span><div><span class="pill good">Balanced board</span>
+     <small>Fair board and ports. Everyone drafts their own settlements, so no corner is a
+     runaway pick and the placement duel is still yours to play.</small></div>`;
+  document.getElementById("playerCards").innerHTML=
+    `<div class="card"><b>Place your own settlements</b>
+     <div class="covers" style="margin-top:.4rem">The board is generated to be fair, then it's
+     yours to draft. What's guaranteed:</div>
+     <ul style="margin:.45rem 0 0;padding-left:1.1rem;display:flex;flex-direction:column;
+       gap:.3rem;font-size:.85rem;color:var(--muted)">
+       <li>No 6/8 touching, no twin numbers touching, no 2 beside 12</li>
+       <li>No same-resource clumps, even pip share across all five resources</li>
+       <li>Ports fixed to the real frame, 2:1s kept off their own resource</li>
+     </ul></div>`;
+}
 
 /* ---------- orchestration ---------- */
-let state={players:4,seed:null,board:null,placement:null};
+let state={players:4,mode:"fair",seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
 function generate(fullBoard){
   if(fullBoard||!state.board){
@@ -635,17 +657,28 @@ function generate(fullBoard){
     state.board={setup,geom,resArr,num,ports,portMap};
   }
   const {geom,resArr,num,ports,portMap}=state.board;
-  state.placement=drawSettlements(geom,resArr,num,state.players,portMap);
-  planRoads(geom,resArr,num,state.placement.pairs,portMap);
-  render(geom,resArr,num,ports,state.placement);
-  renderPanel(geom,resArr,num,portMap,state.placement);
+  const fair=state.mode!=="board";
+  document.getElementById("reroll").style.display=fair?"":"none";
+  document.getElementById("methodCard").style.display=fair?"":"none";
+  if(fair){
+    state.placement=drawSettlements(geom,resArr,num,state.players,portMap);
+    planRoads(geom,resArr,num,state.placement.pairs,portMap);
+    render(geom,resArr,num,ports,state.placement);
+    renderPanel(geom,resArr,num,portMap,state.placement);
+  }else{
+    state.placement=null;
+    render(geom,resArr,num,ports,null);
+    renderBoardPanel();
+  }
   document.getElementById("seedLabel").textContent=state.seed;
-  try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}`);}catch(_){}
+  const mp=state.mode==="board"?"&m=board":"";
+  try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
 }
 function readHash(){
   const m=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
   if(m.s)state.seed=m.s;
   if(m.p&&+m.p>=3&&+m.p<=6)state.players=+m.p;
+  if(m.m==="board")state.mode="board";
 }
 document.getElementById("players").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
@@ -654,15 +687,21 @@ document.getElementById("players").addEventListener("click",e=>{
 });
 document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true)};
 document.getElementById("reroll").onclick=()=>generate(false);
+document.getElementById("mode").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#mode button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  state.mode=b.dataset.mode; generate(false);
+});
 document.getElementById("copy").onclick=async e=>{
-  const link=location.href.split("#")[0]+`#s=${state.seed}&p=${state.players}`;
+  const mp=state.mode==="board"?"&m=board":"";
+  const link=location.href.split("#")[0]+`#s=${state.seed}&p=${state.players}${mp}`;
   try{await navigator.clipboard.writeText(link);e.target.textContent="Copied ✓";}
   catch(_){e.target.textContent=link;}
   setTimeout(()=>e.target.textContent="Copy link",2500);
 };
 /* test hook: drives the exact production pipeline for a given seed/player count */
 window.__hm={run(seed,players){
-  state.seed=seed; state.players=players; state.board=null;
+  state.seed=seed; state.players=players; state.mode="fair"; state.board=null;
   generate(true);
   const {geom,resArr,num,ports}=state.board;
   return {
@@ -678,6 +717,8 @@ readHash();
 if(!state.seed)state.seed=newSeed();
 document.querySelectorAll("#players button").forEach(b=>
   b.setAttribute("aria-pressed",+b.dataset.n===state.players));
+document.querySelectorAll("#mode button").forEach(b=>
+  b.setAttribute("aria-pressed",b.dataset.mode===state.mode));
 generate(true);
 })();
 </script>
