@@ -7,7 +7,12 @@ group (they play 4-player base and 6-player extension).
 - **Live (canonical):** https://harbormaster.vercel.app — Vercel project `harbormaster`
   (sushobhiths-projects; renamed from `fairhex` 2026-07-06, and `ssoProtection` disabled so the
   site is public). GitHub: https://github.com/sushobhith/harbormaster
-- **Deploy:** `vercel deploy --prod` from this directory. No build step; `index.html` is the whole app.
+- **Deploy (TWO steps — the alias does NOT auto-follow):**
+  1. `vercel deploy --prod --yes`
+  2. `vercel alias set "$(vercel ls | grep -oE 'https://harbormaster-[a-z0-9]+-sushobhiths-projects.vercel.app' | head -1)" harbormaster.vercel.app`
+  Skipping step 2 leaves the public URL on the previous deploy (og-image/robots/sitemap 404,
+  stale title). Verify after: `curl -sI https://harbormaster.vercel.app/og-image.png` → 200.
+  No build step; `index.html` is the whole app.
 - **Also published** as a Claude artifact: https://claude.ai/code/artifact/eb2f82e4-a8ef-45b6-a984-265ff21a98db
   (note: the Artifact tool wants the file WITHOUT `<!doctype>/<html>/<head>/<body>` wrapper —
   strip the wrapper before republishing there; Vercel wants it WITH).
