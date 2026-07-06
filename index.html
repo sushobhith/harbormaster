@@ -3,9 +3,46 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Balanced Catan boards with fair pre-assigned starting settlements, roads and ports for 3-6 players.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
-<title>Fair Catan Setup Generator</title>
+<title>Harbormaster — Fair Catan Board Generator with Starting Settlements (3–6 Players)</title>
+<meta name="description" content="Free Catan board generator that also deals fair starting settlements, roads, and ports for every player. Balanced 3–6 player maps, no red-number clusters, shareable links. No signup.">
+<meta name="keywords" content="catan board generator, fair catan board, catan setup generator, catan randomizer, settlers of catan generator, balanced catan board, catan starting settlements, catan 5-6 player generator, catan map generator, catan expansion board">
+<link rel="canonical" href="https://harbormaster.vercel.app/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Sushobhith Sharma">
+<meta name="theme-color" content="#c94f38">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Harbormaster">
+<meta property="og:title" content="Harbormaster — Fair Catan Board Generator with Starting Settlements">
+<meta property="og:description" content="Every generator gives you a board. This one deals fair starting settlements, roads, and ports for every player too. Balanced 3–6 player Catan setups, free.">
+<meta property="og:url" content="https://harbormaster.vercel.app/">
+<meta property="og:image" content="https://harbormaster.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A balanced 6-player Catan board with per-player starting settlements and a fairness readout">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Harbormaster — Fair Catan Board Generator with Starting Settlements">
+<meta name="twitter:description" content="Every generator gives you a board. This one deals fair starting settlements, roads, and ports for every player too. Free, 3–6 players.">
+<meta name="twitter:image" content="https://harbormaster.vercel.app/og-image.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Harbormaster",
+  "alternateName": "Fair Catan Setup Generator",
+  "url": "https://harbormaster.vercel.app/",
+  "description": "Free Catan board generator that deals balanced boards plus fair starting settlements, roads, and ports for 3–6 players.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Sushobhith Sharma" }
+}
+</script>
 <style>
   :root{
     --bg:#eef2f0; --sea:#cfe0e2; --panel:#ffffff; --panel2:#f4f6f4;
@@ -47,6 +84,12 @@
     padding:1.1rem 1.4rem .4rem;}
   header h1{margin:0;font-size:1.55rem;font-weight:600;letter-spacing:.01em}
   header p{margin:0;color:var(--muted);font-size:.9rem}
+  .gh{margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;
+    align-self:center;text-decoration:none;color:var(--ink);font-size:.85rem;
+    font-weight:600;border:1px solid var(--line);border-radius:8px;
+    padding:.38rem .7rem;background:var(--panel);box-shadow:var(--shadow)}
+  .gh:hover{border-color:var(--accent);color:var(--accent)}
+  .gh:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
   .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;
     padding:.6rem 1.4rem 1rem;}
@@ -127,6 +170,10 @@
 <header>
   <h1 class="display">Harbormaster</h1>
   <p>Balanced Catan boards with fair starting settlements, for 3–6 players.</p>
+  <a class="gh" href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener" aria-label="View source code on GitHub">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
 </header>
 
 <div class="toolbar">
@@ -191,7 +238,8 @@
 <footer>Physical setup: lay tiles row by row as shown, tokens on top, robber on the desert.
 Ports are fixed to match the printed frame (photo-verified, both 4-player and 5-6 player) —
 rotate your frame so the port sequence lines up with the drawn board, then everything matches.
-Re-draw settlements keeps the board and only re-deals the starting spots and roads.</footer>
+Re-draw settlements keeps the board and only re-deals the starting spots and roads.
+Free and open source — <a href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener" style="color:var(--accent)">view the code on GitHub</a>.</footer>
 
 <script>
 (() => {

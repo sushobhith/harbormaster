@@ -1,0 +1,10 @@
+node_modules
+.git
+test
+docs
+CLAUDE.md
+README.md
+CONTRIBUTING.md
+package.json
+package-lock.json
+.github

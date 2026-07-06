@@ -4,11 +4,23 @@ Single-file static web app that generates balanced Catan boards with **pre-assig
 settlements, roads, and fixed ports** for 3–6 players. Built July 2026 for Sushobhith's game
 group (they play 4-player base and 6-player extension).
 
-- **Live (canonical):** https://fairhex.vercel.app — Vercel project `fairhex` (sushobhiths-projects)
+- **Live (canonical):** https://harbormaster.vercel.app — Vercel project `harbormaster`
+  (sushobhiths-projects; renamed from `fairhex` 2026-07-06, and `ssoProtection` disabled so the
+  site is public). GitHub: https://github.com/sushobhith/harbormaster
 - **Deploy:** `vercel deploy --prod` from this directory. No build step; `index.html` is the whole app.
 - **Also published** as a Claude artifact: https://claude.ai/code/artifact/eb2f82e4-a8ef-45b6-a984-265ff21a98db
   (note: the Artifact tool wants the file WITHOUT `<!doctype>/<html>/<head>/<body>` wrapper —
   strip the wrapper before republishing there; Vercel wants it WITH).
+
+## SEO / deploy assets (root, deployed; rest is .vercelignore'd)
+
+`index.html` head has full SEO: keyword title/description, canonical, Open Graph + Twitter
+card (image → `/og-image.png`), and WebApplication JSON-LD. `robots.txt` + `sitemap.xml`
+point at the canonical URL. `og-image.png` (1200×630) is rendered from `docs/og-card.html`
+(uses `docs/assets/board-dark.png`) — re-render with a headless screenshot if the card
+changes. `.vercelignore` keeps the deploy to just the static files (index.html, og-image,
+robots, sitemap). To improve ranking further the user must add the site to Google Search
+Console and get backlinks (Reddit/BGG) — on-page SEO alone won't outrank established sites.
 
 ## Why this exists
 
@@ -86,5 +98,5 @@ Baseline results (2026-07-06, 400 setups): all invariants 0; value gap ≤2 in 9
 ## User context
 
 - Group plays both 4p and 6p; fairness is the whole product. User feedback so far:
-  short names (hence `fairhex`), simple scannable explanations (the in-page "cheat sheet"
+  short names, simple scannable explanations (the in-page "cheat sheet"
   card — keep that style), ports must match their physical frame exactly.

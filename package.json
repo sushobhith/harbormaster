@@ -2,7 +2,8 @@
   "name": "harbormaster",
   "version": "1.0.0",
   "description": "Balanced Catan setup generator: board, numbers, fixed ports, and fair pre-assigned starting settlements + roads for 3-6 players. One static file, no build.",
-  "homepage": "https://fairhex.vercel.app",
+  "homepage": "https://harbormaster.vercel.app",
+  "repository": { "type": "git", "url": "https://github.com/sushobhith/harbormaster.git" },
   "license": "MIT",
   "author": "Sushobhith Sharma",
   "keywords": [
