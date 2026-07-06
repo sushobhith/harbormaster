@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Balanced Catan boards with fair pre-assigned starting settlements, roads and ports for 3-6 players.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
+<title>Fair Catan Setup Generator</title>
+<style>
+  :root{
+    --bg:#eef2f0; --sea:#cfe0e2; --panel:#ffffff; --panel2:#f4f6f4;
+    --ink:#22303a; --muted:#5d6d76; --line:#d3dcda;
+    --accent:#c94f38; --token:#f6ecd4; --token-ink:#2c241c;
+    --good:#3e7a45; --warn:#b5852c;
+    --wood:#3e7a45; --brick:#b5643c; --wheat:#d9a83c; --sheep:#8fbf6a; --ore:#7d8494; --desert:#cdb98a;
+    --shadow:0 1px 3px rgba(20,40,45,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16232b; --sea:#0f1a20; --panel:#1e2e37; --panel2:#243541;
+      --ink:#e8e4d8; --muted:#93a4ab; --line:#31454f;
+      --token:#efe3c4; --token-ink:#2c241c;
+      --good:#7fbf85; --warn:#d9b25e;
+      --shadow:0 1px 4px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16232b; --sea:#0f1a20; --panel:#1e2e37; --panel2:#243541;
+    --ink:#e8e4d8; --muted:#93a4ab; --line:#31454f;
+    --token:#efe3c4; --token-ink:#2c241c;
+    --good:#7fbf85; --warn:#d9b25e;
+    --shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef2f0; --sea:#cfe0e2; --panel:#ffffff; --panel2:#f4f6f4;
+    --ink:#22303a; --muted:#5d6d76; --line:#d3dcda;
+    --token:#f6ecd4; --token-ink:#2c241c;
+    --good:#3e7a45; --warn:#b5852c;
+    --shadow:0 1px 3px rgba(20,40,45,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;}
+  .display{font-family:"Iowan Old Style","Palatino Nova",Palatino,Georgia,serif;}
+
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem 1rem;
+    padding:1.1rem 1.4rem .4rem;}
+  header h1{margin:0;font-size:1.55rem;font-weight:600;letter-spacing:.01em}
+  header p{margin:0;color:var(--muted);font-size:.9rem}
+
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;
+    padding:.6rem 1.4rem 1rem;}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+  .seg button{border:0;background:transparent;color:var(--muted);padding:.42rem .8rem;
+    font:inherit;font-weight:600;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);
+    padding:.42rem .9rem;border-radius:8px;font:inherit;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:active{transform:translateY(1px)}
+  .seedbox{margin-left:auto;color:var(--muted);font-size:.8rem;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .seedbox b{color:var(--ink);font-weight:600}
+  .lbl{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+  main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:1rem;padding:0 1.4rem 1.6rem;
+    max-width:1280px}
+  @media (max-width:900px){ main{grid-template-columns:1fr} }
+
+  .boardwrap{background:var(--sea);border:1px solid var(--line);border-radius:14px;
+    padding:.6rem;box-shadow:var(--shadow)}
+  .boardwrap svg{display:block;width:100%;height:auto}
+
+  aside{display:flex;flex-direction:column;gap:.75rem;min-width:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:.8rem .95rem;box-shadow:var(--shadow)}
+  .fair{display:flex;align-items:center;gap:.7rem}
+  .fair .big{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .pill{padding:.15rem .6rem;border-radius:99px;font-size:.75rem;font-weight:700;letter-spacing:.03em}
+  .pill.good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+  .pill.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+  .fair small{color:var(--muted);display:block}
+
+  .player{display:flex;flex-direction:column;gap:.45rem}
+  .player .head{display:flex;align-items:center;gap:.55rem}
+  .swatch{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)}
+  .player .head b{font-size:.95rem}
+  .player .head .pips{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+  .player .head .pips small{color:var(--muted);font-weight:500}
+  .bar{height:5px;border-radius:3px;background:var(--panel2);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+  .spots{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem}
+  .spot{display:flex;align-items:center;gap:.45rem;color:var(--muted);flex-wrap:wrap}
+  .spot .hexes{display:flex;gap:.35rem;flex-wrap:wrap}
+  .spot .hexes.tgt .chip{opacity:.72}
+  .arrow{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .coast{font-size:.78rem;color:var(--muted);font-style:italic}
+  .chip{display:inline-flex;align-items:center;gap:.28rem;background:var(--panel2);
+    border:1px solid var(--line);border-radius:6px;padding:.08rem .45rem;
+    font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .covers{font-size:.78rem;color:var(--muted)}
+  .covers b{color:var(--ink)}
+
+  .boardcol{display:flex;flex-direction:column;gap:.75rem;min-width:0}
+  .legend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem 1rem;
+    font-size:.8rem;color:var(--muted)}
+  .legend .dot{width:11px;height:11px;margin-right:.15rem;vertical-align:-1px}
+  .legend .ring{display:inline-block;width:11px;height:11px;border-radius:50%;
+    border:3px solid var(--wood);background:var(--token);vertical-align:-1px;margin-right:.15rem}
+  .legend .ring.any{border-color:#8d8065}
+  .method{font-size:.8rem;color:var(--muted)}
+  .method b{color:var(--ink)}
+  .method ul{margin:.35rem 0 .8rem;padding-left:1.1rem;display:flex;
+    flex-direction:column;gap:.28rem}
+  .method ul:last-child{margin-bottom:0}
+  footer{padding:0 1.4rem 2rem;color:var(--muted);font-size:.78rem;max-width:70ch}
+  @media (prefers-reduced-motion:no-preference){
+    .btn.primary{transition:transform .06s ease}
+  }
+</style>
+</head>
+<body>
+
+
+<header>
+  <h1 class="display">Harbormaster</h1>
+  <p>Balanced Catan boards with fair starting settlements, for 3–6 players.</p>
+</header>
+
+<div class="toolbar">
+  <span class="lbl">Players</span>
+  <div class="seg" id="players" role="group" aria-label="Player count">
+    <button data-n="3">3</button><button data-n="4" aria-pressed="true">4</button>
+    <button data-n="5">5</button><button data-n="6">6</button>
+  </div>
+  <button class="btn primary" id="newBoard">New board</button>
+  <button class="btn" id="reroll">Re-draw settlements</button>
+  <button class="btn" id="copy">Copy link</button>
+  <span class="seedbox">seed <b id="seedLabel"></b></span>
+</div>
+
+<main>
+  <div class="boardcol">
+    <div class="boardwrap"><svg id="board" role="img" aria-label="Generated Catan board"></svg></div>
+    <div class="card legend">
+      <span class="lbl">Terrain</span>
+      <span><span class="dot" style="background:var(--wood)"></span> Wood · forest</span>
+      <span><span class="dot" style="background:var(--brick)"></span> Brick · hills</span>
+      <span><span class="dot" style="background:var(--wheat)"></span> Wheat · fields</span>
+      <span><span class="dot" style="background:var(--sheep)"></span> Sheep · pasture</span>
+      <span><span class="dot" style="background:var(--ore)"></span> Ore · mountains</span>
+      <span><span class="dot" style="background:var(--desert)"></span> Desert</span>
+      <span class="lbl">Ports</span>
+      <span><i class="ring any"></i> 3:1 any resource</span>
+      <span><i class="ring" style="border-color:var(--wood)"></i> 2:1 · ring colour = its resource</span>
+      <span class="lbl">Tokens</span>
+      <span><b style="color:var(--accent)">6 / 8</b> roll most often</span>
+    </div>
+  </div>
+  <aside>
+    <div class="card fair" id="fairCard"></div>
+    <div id="playerCards" style="display:flex;flex-direction:column;gap:.75rem"></div>
+    <div class="card method">
+      <b>Cheat sheet</b>
+      <ul>
+        <li><b>⌂ row</b> = one settlement. Chips = the hexes it collects from
+          (colour = resource, number = dice roll).</li>
+        <li><b>Pips</b> = the dots under a number = how often it rolls.
+          More pips = more cards. That's your whole score.</li>
+        <li><b>road →</b> = point that settlement's free road here.</li>
+        <li><b>⚓</b> = you start on a port. Counts toward your total,
+          so port players get slightly fewer pips. Still even.</li>
+        <li><b>±N</b> at the top = best player minus worst player.
+          0 or 1 = even game. Above 2 → hit Re-draw.</li>
+        <li><b>Weakest start plays first.</b> Order is on each card.</li>
+      </ul>
+      <b>Built-in rules</b>
+      <ul>
+        <li>6 and 8 never touch · twin numbers never touch · 2 never touches 12</li>
+        <li>No same-resource clumps · every resource gets a fair pip share</li>
+        <li>Ports fixed to match the real frame · land placed so a 2:1 port
+          avoids its own resource</li>
+        <li>Settlement distance rule respected · 6/8 access evened across players</li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<footer>Physical setup: lay tiles row by row as shown, tokens on top, robber on the desert.
+Ports are fixed to match the printed frame (photo-verified, both 4-player and 5-6 player) —
+rotate your frame so the port sequence lines up with the drawn board, then everything matches.
+Re-draw settlements keeps the board and only re-deals the starting spots and roads.</footer>
+
+<script>
+(() => {
+"use strict";
+/* ---------- RNG ---------- */
+function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19}return()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^=h>>>16)>>>0}}
+function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rnd=Math.random;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- board data ---------- */
+const RES={wood:"var(--wood)",brick:"var(--brick)",wheat:"var(--wheat)",sheep:"var(--sheep)",ore:"var(--ore)",desert:"var(--desert)"};
+const RESNAME={wood:"Wood",brick:"Brick",wheat:"Wheat",sheep:"Sheep",ore:"Ore",desert:"Desert"};
+const SETUPS={
+  base:{rows:[3,4,5,4,3],
+    res:{wood:4,sheep:4,wheat:4,brick:3,ore:3,desert:1},
+    tokens:[2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12],
+    // photo-verified port sequence from the physical frame, clockwise from the west edge
+    portSeq:["any","sheep","any","any","brick","wood","any","wheat","ore"]},
+  ext:{rows:[3,4,5,6,5,4,3],
+    res:{wood:6,sheep:6,wheat:6,brick:5,ore:5,desert:2},
+    tokens:[2,2,3,3,3,4,4,4,5,5,5,6,6,6,8,8,8,9,9,9,10,10,10,11,11,11,12,12],
+    portSeq:["any","brick","sheep","wood","any","wheat","any","ore","any","sheep","any"]}
+};
+const PIPS={2:1,3:2,4:3,5:4,6:5,8:5,9:4,10:3,11:2,12:1};
+const PLAYERCOLORS=[["Red","#c0392b"],["Blue","#2e6da4"],["White","#e8e6df"],["Orange","#d98032"],["Green","#4c9a52"],["Brown","#8a5a3b"]];
+
+/* ---------- geometry (pointy-top) ---------- */
+const S=52, W=Math.sqrt(3)*S;
+function buildGeom(rows){
+  const hexes=[];
+  rows.forEach((len,r)=>{for(let i=0;i<len;i++)
+    hexes.push({x:(i-(len-1)/2)*W, y:r*1.5*S, id:hexes.length});});
+  for(const h of hexes){h.corners=[];for(let k=0;k<6;k++){
+    const a=Math.PI/180*(60*k-30);
+    h.corners.push([h.x+S*Math.cos(a), h.y+S*Math.sin(a)]);}}
+  // dedupe vertices
+  const vmap=new Map(), verts=[];
+  const key=(x,y)=>Math.round(x*10)+"_"+Math.round(y*10);
+  for(const h of hexes) h.vids=h.corners.map(([x,y])=>{
+    const k=key(x,y);
+    if(!vmap.has(k)){vmap.set(k,verts.length);verts.push({x,y,hexes:[],adj:new Set()});}
+    const id=vmap.get(k); verts[id].hexes.push(h.id); return id;});
+  // hex adjacency
+  for(const a of hexes){a.adj=[];for(const b of hexes){
+    if(a!==b && Math.hypot(a.x-b.x,a.y-b.y)<W*1.1) a.adj.push(b.id);}}
+  // vertex adjacency (edges of hexes)
+  for(const h of hexes) for(let k=0;k<6;k++){
+    const a=h.vids[k], b=h.vids[(k+1)%6];
+    verts[a].adj.add(b); verts[b].adj.add(a);}
+  return {hexes,verts};
+}
+
+/* ---------- resource placement: no same-type neighbours, keep 2:1 ports off their own resource ---------- */
+function placeResources(geom,setup,ports){
+  const pool=[];
+  for(const[r,n]of Object.entries(setup.res))for(let i=0;i<n;i++)pool.push(r);
+  const portTouch=ports.filter(p=>p.type!=="any").map(p=>({type:p.type,
+    hexes:[...new Set([...geom.verts[p.a].hexes,...geom.verts[p.b].hexes])]}));
+  const bad=arr=>{let v=0;
+    for(const h of geom.hexes)for(const j of h.adj)
+      if(j>h.id && arr[h.id]===arr[j]) v++;
+    for(const pt of portTouch)for(const hid of pt.hexes)
+      if(arr[hid]===pt.type) v++;
+    return v;};
+  let best=null,bestV=1e9;
+  for(let attempt=0;attempt<40;attempt++){
+    const arr=shuffle(pool.slice());
+    let v=bad(arr);
+    for(let it=0;it<600&&v>0;it++){
+      const i=Math.floor(rnd()*arr.length), j=Math.floor(rnd()*arr.length);
+      if(arr[i]===arr[j])continue;
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+      const nv=bad(arr);
+      if(nv<=v)v=nv; else [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    if(v<bestV){bestV=v;best=arr.slice();}
+    if(v===0)break;
+  }
+  return best;
+}
+
+/* ---------- number placement ---------- */
+function placeNumbers(geom,setup,resArr){
+  const land=geom.hexes.filter(h=>resArr[h.id]!=="desert").map(h=>h.id);
+  const score=num=>{
+    let s=0;
+    for(const id of land){const h=geom.hexes[id],a=num[id];
+      for(const j of h.adj){ if(j<=id||resArr[j]==="desert")continue;
+        const b=num[j];
+        if((a===6||a===8)&&(b===6||b===8)) s+=100;
+        if(a===b) s+=8;
+        if((a===2&&b===12)||(a===12&&b===2)) s+=6;
+      }}
+    // per-resource pip fairness
+    const tot={},cnt={};
+    for(const id of land){const r=resArr[id];tot[r]=(tot[r]||0)+PIPS[num[id]];cnt[r]=(cnt[r]||0)+1;}
+    const avgs=Object.keys(tot).map(r=>tot[r]/cnt[r]);
+    const mean=avgs.reduce((a,b)=>a+b,0)/avgs.length;
+    for(const a of avgs) s+=Math.abs(a-mean)*4;
+    return s;
+  };
+  let best=null,bestS=1e9;
+  for(let attempt=0;attempt<25;attempt++){
+    const toks=shuffle(setup.tokens.slice());
+    const num={}; land.forEach((id,i)=>num[id]=toks[i]);
+    let s=score(num);
+    for(let it=0;it<1200;it++){
+      const i=land[Math.floor(rnd()*land.length)], j=land[Math.floor(rnd()*land.length)];
+      if(num[i]===num[j])continue;
+      [num[i],num[j]]=[num[j],num[i]];
+      const ns=score(num);
+      if(ns<=s)s=ns; else [num[i],num[j]]=[num[j],num[i]];
+    }
+    if(s<bestS){bestS=s;best={...num}}
+    if(s<3)break;
+  }
+  return best;
+}
+
+/* ---------- ports: fixed layout matching the physical frame ---------- */
+function placePorts(geom,portSeq){
+  const ecount=new Map(), einfo=new Map();
+  for(const h of geom.hexes) for(let k=0;k<6;k++){
+    const a=h.vids[k], b=h.vids[(k+1)%6];
+    const key=Math.min(a,b)+"_"+Math.max(a,b);
+    ecount.set(key,(ecount.get(key)||0)+1);
+    einfo.set(key,{a,b,hex:h.id});
+  }
+  let cx=0,cy=0; geom.hexes.forEach(h=>{cx+=h.x;cy+=h.y});
+  cx/=geom.hexes.length; cy/=geom.hexes.length;
+  const per=[...ecount.entries()].filter(([,c])=>c===1).map(([k])=>einfo.get(k));
+  per.forEach(e=>{const va=geom.verts[e.a],vb=geom.verts[e.b];
+    e.mx=(va.x+vb.x)/2; e.my=(va.y+vb.y)/2;
+    e.ang=Math.atan2(e.my-cy,e.mx-cx);});
+  per.sort((p,q)=>p.ang-q.ang); // clockwise, starting at the west edge
+  const n=portSeq.length;
+  return portSeq.map((ty,i)=>{
+    const e=per[Math.round(i*per.length/n)%per.length];
+    return {a:e.a,b:e.b,hex:e.hex,mx:e.mx,my:e.my,type:ty};
+  });
+}
+const portStatic=ty=>ty==null?0:(ty==="any"?1.0:1.5);
+
+/* ---------- settlement selection & fair pairing ---------- */
+function vertexInfo(geom,resArr,num,vid){
+  const v=geom.verts[vid];let pips=0;const res=new Set(),chips=[];
+  for(const hid of v.hexes){const r=resArr[hid];
+    if(r==="desert")continue;
+    pips+=PIPS[num[hid]]; res.add(r); chips.push([r,num[hid]]);}
+  return {pips,res,chips};
+}
+function pairEff(p){
+  let v=p[0].pips+p[1].pips;
+  for(const spot of p){
+    if(!spot.port)continue;
+    if(spot.port==="any"){v+=1.0;continue;}
+    let rp=0;
+    for(const s of p)for(const[r,n]of s.chips)if(r===spot.port)rp+=PIPS[n];
+    v+=1.5+(rp>=4?0.5:0);
+  }
+  return v;
+}
+function drawSettlements(geom,resArr,num,nPlayers,portMap){
+  const need=nPlayers*2;
+  let best=null;
+  for(let attempt=0;attempt<60;attempt++){
+    // greedy pick with jitter, distance rule; ports raise a spot's value
+    const scored=geom.verts.map((v,i)=>{
+      const inf=vertexInfo(geom,resArr,num,i);
+      const port=portMap.get(i)||null;
+      const redp=inf.chips.filter(([,n])=>n===6||n===8).length*5;
+      return {vid:i,pips:inf.pips,res:inf.res,chips:inf.chips,port,redp,
+        s:inf.pips+inf.res.size*0.7+portStatic(port)+rnd()*1.4};
+    }).filter(o=>o.pips>=3).sort((a,b)=>b.s-a.s);
+    const blocked=new Set(),picked=[];
+    for(const o of scored){
+      if(blocked.has(o.vid))continue;
+      picked.push(o); blocked.add(o.vid);
+      for(const nb of geom.verts[o.vid].adj) blocked.add(nb);
+      if(picked.length===need)break;
+    }
+    if(picked.length<need)continue;
+    // fair pairing: strongest with weakest, by effective value
+    picked.sort((a,b)=>(b.pips+portStatic(b.port))-(a.pips+portStatic(a.port)));
+    const pairs=[];
+    for(let i=0;i<nPlayers;i++) pairs.push([picked[i],picked[need-1-i]]);
+    // local swaps: shrink value spread, keep diversity, even out 6/8 exposure
+    const div=p=>new Set([...p[0].res,...p[1].res]).size;
+    const spread=ps=>Math.max(...ps.map(pairEff))-Math.min(...ps.map(pairEff));
+    const divmin=ps=>Math.min(...ps.map(div));
+    const redspan=ps=>{const r=ps.map(p=>p[0].redp+p[1].redp);
+      return Math.max(...r)-Math.min(...r);};
+    const key=ps=>[spread(ps),-divmin(ps),redspan(ps)];
+    const worse=(k1,k0)=>{for(let i=0;i<k1.length;i++){
+      if(k1[i]>k0[i]+1e-9)return true; if(k1[i]<k0[i]-1e-9)return false;}
+      return false;};
+    for(let it=0;it<600;it++){
+      const a=Math.floor(rnd()*nPlayers),b=Math.floor(rnd()*nPlayers);
+      if(a===b)continue;
+      const ia=Math.floor(rnd()*2),ib=Math.floor(rnd()*2);
+      const k0=key(pairs);
+      [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+      if(worse(key(pairs),k0))
+        [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+    }
+    const cand={pairs,spread:spread(pairs),divmin:divmin(pairs),
+      redspan:redspan(pairs),total:pairs.reduce((t,p)=>t+pairEff(p),0)};
+    const candKey=c=>[c.spread,-c.divmin,c.redspan,-c.total];
+    if(!best||worse(candKey(best),candKey(cand))) best=cand;
+    if(best.spread<0.6&&best.divmin>=4&&best.redspan<=5)break;
+  }
+  return best;
+}
+
+/* ---------- starting roads: point at best unclaimed expansion spot ---------- */
+function planRoads(geom,resArr,num,pairs,portMap){
+  const blocked=new Set();
+  for(const p of pairs)for(const s of p){blocked.add(s.vid);
+    for(const nb of geom.verts[s.vid].adj)blocked.add(nb);}
+  const sums=pairs.map(p=>p[0].pips+p[1].pips);
+  const order=pairs.map((_,i)=>i).sort((a,b)=>sums[a]-sums[b]);
+  const claimed=new Set();
+  const findTarget=(spot,ignoreClaims)=>{
+    let best=null;
+    for(const v2 of geom.verts[spot.vid].adj){
+      for(const v3 of geom.verts[v2].adj){
+        if(v3===spot.vid||blocked.has(v3))continue;
+        if(!ignoreClaims&&claimed.has(v3))continue;
+        const inf=vertexInfo(geom,resArr,num,v3);
+        if(inf.pips<1)continue;
+        const val=inf.pips+inf.res.size*0.7+portStatic(portMap.get(v3)||null);
+        if(!best||val>best.val)
+          best={to:v2,target:v3,val,pips:inf.pips,chips:inf.chips};
+      }
+    }
+    return best;
+  };
+  for(const pi of order){
+    for(const spot of pairs[pi]){
+      let best=findTarget(spot,false);      // prefer a spot nobody else aims at
+      if(best)claimed.add(best.target);
+      else best=findTarget(spot,true)       // contested spot beats no spot
+        ||{to:[...geom.verts[spot.vid].adj][0],target:null,val:0,pips:0,chips:[]};
+      spot.road=best;
+    }
+  }
+}
+
+/* ---------- render ---------- */
+const svg=document.getElementById("board");
+const NS="http://www.w3.org/2000/svg";
+function el(name,attrs,parent){const e=document.createElementNS(NS,name);
+  for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);
+  (parent||svg).appendChild(e);return e;}
+function render(geom,resArr,num,ports,placement){
+  svg.innerHTML="";
+  const xs=geom.verts.map(v=>v.x),ys=geom.verts.map(v=>v.y);
+  const pad=40;
+  const minx=Math.min(...xs)-pad,maxx=Math.max(...xs)+pad;
+  const miny=Math.min(...ys)-pad,maxy=Math.max(...ys)+pad;
+  svg.setAttribute("viewBox",`${minx} ${miny} ${maxx-minx} ${maxy-miny}`);
+  let desertDone=false;
+  for(const h of geom.hexes){
+    const r=resArr[h.id];
+    el("polygon",{points:h.corners.map(c=>c.join(",")).join(" "),
+      fill:RES[r],stroke:"rgba(30,25,15,.35)","stroke-width":2.2,
+      "stroke-linejoin":"round"});
+    if(r!=="desert"){
+      const n=num[h.id],red=n===6||n===8;
+      el("circle",{cx:h.x,cy:h.y,r:15.5,fill:"var(--token)",
+        stroke:"rgba(30,25,15,.3)","stroke-width":1});
+      const t=el("text",{x:h.x,y:h.y+1,"text-anchor":"middle",
+        "dominant-baseline":"middle","font-size":15,"font-weight":700,
+        fill:red?"#c0392b":"var(--token-ink)"});
+      t.textContent=n; t.style.fontFamily='"Iowan Old Style",Palatino,Georgia,serif';
+      const pips=PIPS[n];
+      for(let p=0;p<pips;p++)
+        el("circle",{cx:h.x+(p-(pips-1)/2)*3.6,cy:h.y+9.5,r:1.15,
+          fill:red?"#c0392b":"var(--token-ink)"});
+    } else if(!desertDone){ desertDone=true;
+      const g=el("g",{transform:`translate(${h.x},${h.y})`});
+      el("circle",{cx:0,cy:0,r:9,fill:"rgba(40,35,28,.75)"},g);
+      el("circle",{cx:0,cy:-9,r:4.5,fill:"rgba(40,35,28,.75)"},g);
+      const t=el("text",{x:0,y:24,"text-anchor":"middle","font-size":8,
+        fill:"rgba(40,35,28,.8)","font-weight":600},g);
+      t.textContent="ROBBER";
+    }
+  }
+  // ports on the coast
+  for(const pt of ports){
+    const va=geom.verts[pt.a], vb=geom.verts[pt.b], h=geom.hexes[pt.hex];
+    let dx=pt.mx-h.x, dy=pt.my-h.y;
+    const L=Math.hypot(dx,dy)||1; dx/=L; dy/=L;
+    const px=pt.mx+dx*17, py=pt.my+dy*17;
+    for(const v of [va,vb])
+      el("line",{x1:v.x,y1:v.y,x2:px,y2:py,stroke:"rgba(60,45,25,.5)",
+        "stroke-width":3,"stroke-linecap":"round"});
+    el("circle",{cx:px,cy:py,r:11,fill:"var(--token)",
+      stroke:pt.type==="any"?"rgba(90,80,60,.85)":RES[pt.type],"stroke-width":3});
+    const t=el("text",{x:px,y:py+1,"text-anchor":"middle",
+      "dominant-baseline":"middle","font-size":8.5,"font-weight":700,
+      fill:"var(--token-ink)"});
+    t.textContent=pt.type==="any"?"3:1":"2:1";
+  }
+  // starting roads (under the houses)
+  placement.pairs.forEach((pair,pi)=>{
+    const[,color]=PLAYERCOLORS[pi];
+    for(const spot of pair){
+      const r=spot.road; if(!r)continue;
+      const a=geom.verts[spot.vid], b=geom.verts[r.to];
+      const x1=a.x+(b.x-a.x)*0.2, y1=a.y+(b.y-a.y)*0.2;
+      const x2=a.x+(b.x-a.x)*0.88, y2=a.y+(b.y-a.y)*0.88;
+      el("line",{x1,y1,x2,y2,stroke:"rgba(20,15,10,.6)","stroke-width":7.5,"stroke-linecap":"round"});
+      el("line",{x1,y1,x2,y2,stroke:color,"stroke-width":4.5,"stroke-linecap":"round"});
+    }
+  });
+  // settlements
+  placement.pairs.forEach((pair,pi)=>{
+    const[,color]=PLAYERCOLORS[pi];
+    for(const spot of pair){
+      const v=geom.verts[spot.vid];
+      const g=el("g",{transform:`translate(${v.x},${v.y})`});
+      el("path",{d:"M -8 8 L -8 -2 L 0 -9 L 8 -2 L 8 8 Z",fill:color,
+        stroke:"rgba(20,15,10,.55)","stroke-width":1.6,"stroke-linejoin":"round"},g);
+      const t=el("text",{x:0,y:3.5,"text-anchor":"middle","font-size":9,
+        "font-weight":800,fill:pi===2?"#333":"#fff"},g);
+      t.textContent=pi+1;
+    }
+  });
+}
+function renderPanel(geom,resArr,num,portMap,placement){
+  const cards=document.getElementById("playerCards");cards.innerHTML="";
+  const sums=placement.pairs.map(p=>p[0].pips+p[1].pips);
+  const effs=placement.pairs.map(pairEff);
+  const maxEff=Math.max(...effs);
+  const order=placement.pairs.map((p,i)=>i).sort((a,b)=>effs[a]-effs[b]);
+  placement.pairs.forEach((pair,pi)=>{
+    const[name,color]=PLAYERCOLORS[pi];
+    const covered=new Set([...pair[0].res,...pair[1].res]);
+    const missing=Object.keys(RESNAME).filter(r=>r!=="desert"&&!covered.has(r));
+    const card=document.createElement("div");card.className="card player";
+    const chipsOf=list=>list.map(([r,n])=>
+      `<span class="chip"><span class="dot" style="background:${RES[r]}"></span>${n}</span>`).join("");
+    const spotHTML=spot=>{
+      const inf=vertexInfo(geom,resArr,num,spot.vid);
+      const port=portMap.get(spot.vid);
+      const portChip=port?`<span class="chip pt">⚓ ${port==="any"
+        ?"3:1":`2:1 <span class="dot" style="background:${RES[port]}"></span>`}</span>`:"";
+      const tgt=spot.road&&spot.road.target!=null
+        ?`<span class="hexes tgt">${chipsOf(spot.road.chips)}</span>`
+        :`<span class="coast">open coast</span>`;
+      return `<div class="spot">⌂<span class="hexes">${chipsOf(inf.chips)}${portChip}</span>`
+        +`<span class="arrow">road →</span>${tgt}</div>`;};
+    const turn=order.indexOf(pi)+1;
+    const portBonus=effs[pi]-sums[pi];
+    card.innerHTML=`
+      <div class="head"><span class="swatch" style="background:${color}"></span>
+        <b>Player ${pi+1} · ${name}</b>
+        <span class="pips">${sums[pi]} <small>pips</small>${
+          portBonus>0?` <small>+${portBonus.toFixed(1)} port</small>`:""}</span></div>
+      <div class="bar"><i style="width:${effs[pi]/maxEff*100}%;background:${color}"></i></div>
+      <div class="spots">${spotHTML(pair[0])}${spotHTML(pair[1])}</div>
+      <div class="covers">Covers <b>${covered.size}/5</b> resources${
+        missing.length?` · missing ${missing.map(m=>RESNAME[m]).join(", ")}`:""}
+        · takes turn <b>${turn}</b>${turn===1?" — starts first":""}</div>`;
+    cards.appendChild(card);
+  });
+  const fc=document.getElementById("fairCard");
+  const spread=Math.round(placement.spread*10)/10;
+  const ok=spread<=2;
+  const starter=PLAYERCOLORS[order[0]][0];
+  fc.innerHTML=`<span class="big">±${spread}</span>
+    <div><span class="pill ${ok?"good":"warn"}">${ok?"Balanced start":"Uneven — re-draw"}</span>
+    <small>start-value gap (pips + port worth), best vs worst · avg ${
+      (sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)} pips each ·
+      <b>${starter} starts first</b>, then weakest to strongest</small></div>`;
+}
+
+/* ---------- orchestration ---------- */
+let state={players:4,seed:null,board:null,placement:null};
+function newSeed(){return Math.random().toString(36).slice(2,8)}
+function generate(fullBoard){
+  if(fullBoard||!state.board){
+    rnd=mulberry32(xmur3(state.seed+"|"+state.players)());
+    const setup=state.players>=5?SETUPS.ext:SETUPS.base;
+    const geom=buildGeom(setup.rows);
+    const ports=placePorts(geom,setup.portSeq);
+    const resArr=placeResources(geom,setup,ports);
+    const num=placeNumbers(geom,setup,resArr);
+    const portMap=new Map();
+    for(const p of ports){portMap.set(p.a,p.type);portMap.set(p.b,p.type);}
+    state.board={setup,geom,resArr,num,ports,portMap};
+  }
+  const {geom,resArr,num,ports,portMap}=state.board;
+  state.placement=drawSettlements(geom,resArr,num,state.players,portMap);
+  planRoads(geom,resArr,num,state.placement.pairs,portMap);
+  render(geom,resArr,num,ports,state.placement);
+  renderPanel(geom,resArr,num,portMap,state.placement);
+  document.getElementById("seedLabel").textContent=state.seed;
+  try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}`);}catch(_){}
+}
+function readHash(){
+  const m=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+  if(m.s)state.seed=m.s;
+  if(m.p&&+m.p>=3&&+m.p<=6)state.players=+m.p;
+}
+document.getElementById("players").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#players button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  state.players=+b.dataset.n; state.board=null; generate(true);
+});
+document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true)};
+document.getElementById("reroll").onclick=()=>generate(false);
+document.getElementById("copy").onclick=async e=>{
+  const link=location.href.split("#")[0]+`#s=${state.seed}&p=${state.players}`;
+  try{await navigator.clipboard.writeText(link);e.target.textContent="Copied ✓";}
+  catch(_){e.target.textContent=link;}
+  setTimeout(()=>e.target.textContent="Copy link",2500);
+};
+/* test hook: drives the exact production pipeline for a given seed/player count */
+window.__hm={run(seed,players){
+  state.seed=seed; state.players=players; state.board=null;
+  generate(true);
+  const {geom,resArr,num,ports}=state.board;
+  return {
+    hexes:geom.hexes.map(h=>({id:h.id,adj:h.adj,res:resArr[h.id],num:num[h.id]??null})),
+    verts:geom.verts.map(v=>({hexes:v.hexes,adj:[...v.adj]})),
+    ports:ports.map(p=>({a:p.a,b:p.b,type:p.type})),
+    pairs:state.placement.pairs.map(pr=>pr.map(s=>({vid:s.vid,pips:s.pips,port:s.port,
+      road:s.road?{to:s.road.to,target:s.road.target}:null}))),
+    spread:state.placement.spread
+  };
+}};
+readHash();
+if(!state.seed)state.seed=newSeed();
+document.querySelectorAll("#players button").forEach(b=>
+  b.setAttribute("aria-pressed",+b.dataset.n===state.players));
+generate(true);
+})();
+</script>
+
+</body>
+</html>
