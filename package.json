@@ -1,0 +1,19 @@
+{
+  "name": "harbormaster",
+  "version": "1.0.0",
+  "description": "Balanced Catan setup generator: board, numbers, fixed ports, and fair pre-assigned starting settlements + roads for 3–6 players. One static file, no build.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
+}
