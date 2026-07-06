@@ -1,18 +1,28 @@
 {
   "name": "harbormaster",
   "version": "1.0.0",
-  "description": "Balanced Catan setup generator: board, numbers, fixed ports, and fair pre-assigned starting settlements + roads for 3–6 players. One static file, no build.",
-  "main": "index.js",
+  "description": "Balanced Catan setup generator: board, numbers, fixed ports, and fair pre-assigned starting settlements + roads for 3-6 players. One static file, no build.",
+  "homepage": "https://fairhex.vercel.app",
+  "license": "MIT",
+  "author": "Sushobhith Sharma",
+  "keywords": [
+    "catan",
+    "settlers-of-catan",
+    "board-game",
+    "generator",
+    "balanced",
+    "randomizer",
+    "board-game-tools",
+    "tabletop"
+  ],
   "directories": {
     "doc": "docs",
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test_balance.mjs \"$PWD\" 100 && node test/test_page.mjs \"$PWD\"",
+    "test:quick": "node test/test_balance.mjs \"$PWD\" 20"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "playwright": "^1.61.1"
   }
