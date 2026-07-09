@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Harbormaster — Fair Catan Board Generator with Starting Settlements (3–6 Players)</title>
-<meta name="description" content="Free Catan board generator that also deals fair starting settlements, roads, and ports for every player. Balanced 3–6 player maps, no red-number clusters, shareable links. No signup.">
-<meta name="keywords" content="catan board generator, fair catan board, catan setup generator, catan randomizer, settlers of catan generator, balanced catan board, catan starting settlements, catan 5-6 player generator, catan map generator, catan expansion board">
+<title>Harbormaster — Fair Catan Board Generator with Starting Settlements (Base + Seafarers, 3–6 Players)</title>
+<meta name="description" content="Free Catan board generator that also deals fair starting settlements, roads, and ports for every player. Balanced base and Seafarers (Heading for New Shores) maps for 3–6 players, shareable links. No signup.">
+<meta name="keywords" content="catan board generator, fair catan board, catan setup generator, catan randomizer, settlers of catan generator, balanced catan board, catan starting settlements, catan 5-6 player generator, catan map generator, catan seafarers board generator, seafarers map generator, heading for new shores setup, catan expansion board">
 <link rel="canonical" href="https://harbormaster.vercel.app/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Sushobhith Sharma">
@@ -15,7 +15,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Harbormaster">
 <meta property="og:title" content="Harbormaster — Fair Catan Board Generator with Starting Settlements">
-<meta property="og:description" content="Every generator gives you a board. This one deals fair starting settlements, roads, and ports for every player too. Balanced 3–6 player Catan setups, free.">
+<meta property="og:description" content="Every generator gives you a board. This one deals fair starting settlements, roads, and ports for every player too. Base + Seafarers, 3–6 players, free.">
 <meta property="og:url" content="https://harbormaster.vercel.app/">
 <meta property="og:image" content="https://harbormaster.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -34,7 +34,7 @@
   "name": "Harbormaster",
   "alternateName": "Fair Catan Setup Generator",
   "url": "https://harbormaster.vercel.app/",
-  "description": "Free Catan board generator that deals balanced boards plus fair starting settlements, roads, and ports for 3–6 players.",
+  "description": "Free Catan board generator that deals balanced boards plus fair starting settlements, roads, and ports for 3–6 players. Supports the base game and Seafarers (Heading for New Shores).",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -43,6 +43,23 @@
   "author": { "@type": "Person", "name": "Sushobhith Sharma" }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "How is this different from other Catan board generators?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Other generators balance the board. Harbormaster also deals each player two starting settlements, two roads, and a turn order, matched so the start-value gap between the best and worst player is at most 1-2 pips. Prefer drafting yourself? Board-only mode keeps the balanced board and leaves placement to the table." } },
+    { "@type": "Question", "name": "Does it support Catan Seafarers?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Seafarers map generates the official Heading for New Shores scenario for 3-6 players: main island, small islands with gold fields, their two separate number-token sets, and harbors on the official scenario edges, all balanced the same way as the base game." } },
+    { "@type": "Question", "name": "Can I share a generated board with my group?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Every board has a seed in the URL. Copy the link and everyone who opens it sees the identical setup, including the starting settlements." } },
+    { "@type": "Question", "name": "Is it free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Free, no signup, open source. It is a single HTML file that runs entirely in your browser." } }
+  ]
+}
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <style>
   :root{
     --bg:#eef2f0; --sea:#cfe0e2; --panel:#ffffff; --panel2:#f4f6f4;
@@ -50,6 +67,7 @@
     --accent:#c94f38; --token:#f6ecd4; --token-ink:#2c241c;
     --good:#3e7a45; --warn:#b5852c;
     --wood:#3e7a45; --brick:#b5643c; --wheat:#d9a83c; --sheep:#8fbf6a; --ore:#7d8494; --desert:#cdb98a;
+    --gold:#ecc94b; --seahex:#a8c8d8;
     --shadow:0 1px 3px rgba(20,40,45,.12);
   }
   @media (prefers-color-scheme: dark){
@@ -58,6 +76,7 @@
       --ink:#e8e4d8; --muted:#93a4ab; --line:#31454f;
       --token:#efe3c4; --token-ink:#2c241c;
       --good:#7fbf85; --warn:#d9b25e;
+      --gold:#d9b83e; --seahex:#1d3a4a;
       --shadow:0 1px 4px rgba(0,0,0,.4);
     }
   }
@@ -66,6 +85,7 @@
     --ink:#e8e4d8; --muted:#93a4ab; --line:#31454f;
     --token:#efe3c4; --token-ink:#2c241c;
     --good:#7fbf85; --warn:#d9b25e;
+    --gold:#d9b83e; --seahex:#1d3a4a;
     --shadow:0 1px 4px rgba(0,0,0,.4);
   }
   :root[data-theme="light"]{
@@ -73,8 +93,14 @@
     --ink:#22303a; --muted:#5d6d76; --line:#d3dcda;
     --token:#f6ecd4; --token-ink:#2c241c;
     --good:#3e7a45; --warn:#b5852c;
+    --gold:#ecc94b; --seahex:#a8c8d8;
     --shadow:0 1px 3px rgba(20,40,45,.12);
   }
+  .sea-only{display:none}
+  body[data-map="sea"] span.sea-only,body[data-map="sea"] b.sea-only{display:inline}
+  body[data-map="sea"] li.sea-only{display:list-item}
+  body[data-map="sea"] ul.sea-only{display:flex}
+  body[data-map="sea"] .classic-only{display:none}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
     font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;}
@@ -177,6 +203,11 @@
 </header>
 
 <div class="toolbar">
+  <span class="lbl">Map</span>
+  <div class="seg" id="map" role="group" aria-label="Map type">
+    <button data-map="classic" aria-pressed="true">Classic</button>
+    <button data-map="sea">Seafarers</button>
+  </div>
   <span class="lbl">Players</span>
   <div class="seg" id="players" role="group" aria-label="Player count">
     <button data-n="3">3</button><button data-n="4" aria-pressed="true">4</button>
@@ -204,6 +235,8 @@
       <span><span class="dot" style="background:var(--sheep)"></span> Sheep · pasture</span>
       <span><span class="dot" style="background:var(--ore)"></span> Ore · mountains</span>
       <span><span class="dot" style="background:var(--desert)"></span> Desert</span>
+      <span class="sea-only"><span class="dot" style="background:var(--gold)"></span> Gold · pick any resource</span>
+      <span class="sea-only"><span class="dot" style="background:var(--seahex)"></span> Sea</span>
       <span class="lbl">Ports</span>
       <span><i class="ring any"></i> 3:1 any resource</span>
       <span><i class="ring" style="border-color:var(--wood)"></i> 2:1 · ring colour = its resource</span>
@@ -232,19 +265,47 @@
       <ul>
         <li>6 and 8 never touch · twin numbers never touch · 2 never touches 12</li>
         <li>No same-resource clumps · every resource gets a fair pip share</li>
-        <li>Ports fixed to match the real frame · land placed so a 2:1 port
+        <li class="classic-only">Ports fixed to match the real frame · land placed so a 2:1 port
           avoids its own resource</li>
+        <li class="sea-only">Harbors on the official scenario edges, types shuffled ·
+          2:1 ports kept off their own resource</li>
         <li>Settlement distance rule respected · 6/8 access evened across players</li>
+      </ul>
+      <b class="sea-only">Seafarers · Heading for New Shores</b>
+      <ul class="sea-only">
+        <li>Starting settlements go on the <b>main island</b> only — the island race is
+          yours to play. Rules allow a ship instead of a starting road; the drawn road
+          just shows which coast the plan valued.</li>
+        <li>Small islands use their own tile + number sets, including gold fields
+          (gold = collect any resource).</li>
+        <li>First settlement on each small island = <b>2 bonus VP</b> · play to 14 VP.</li>
+        <li>Robber: 4-player starts on the desert; 3-player has no desert — rulebook parks
+          it on an island hills hex. Pirate starts on the marked sea hex.</li>
       </ul>
     </div>
   </aside>
 </main>
 
-<footer>Physical setup: lay tiles row by row as shown, tokens on top, robber on the desert.
+<footer><span class="classic-only">Physical setup: lay tiles row by row as shown, tokens on top, robber on the desert.
 Ports are fixed to match the printed frame (photo-verified, both 4-player and 5-6 player) —
-rotate your frame so the port sequence lines up with the drawn board, then everything matches.
+rotate your frame so the port sequence lines up with the drawn board, then everything matches.</span>
+<span class="sea-only">Physical setup: assemble the Seafarers frame per the "Heading for New Shores" scenario
+diagram, then copy this board — the drawn shape, harbor positions, tile pools, and the two
+number-token sets all follow the official scenario; only the placement is balanced-random.</span>
 Re-draw settlements keeps the board and only re-deals the starting spots and roads.
-Free and open source — <a href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener" style="color:var(--accent)">view the code on GitHub</a>.</footer>
+Free and open source — <a href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener" style="color:var(--accent)">view the code on GitHub</a>.
+<details style="margin-top:.8rem"><summary style="cursor:pointer;font-weight:600">FAQ</summary>
+<p><b>How is this different from other Catan board generators?</b> Others balance the board.
+Harbormaster also deals each player two starting settlements, two roads, and a turn order,
+matched so the start-value gap is at most 1–2 pips. Prefer drafting? Board-only mode keeps
+the balanced board and leaves placement to the table.</p>
+<p><b>Does it support Catan Seafarers?</b> Yes — the Seafarers map generates the official
+"Heading for New Shores" scenario for 3–6 players: main island, small islands with gold
+fields, their two separate number-token sets, and harbors on the official scenario edges.</p>
+<p><b>Can I share a board?</b> Every board has a seed in the URL. Copy the link and everyone
+sees the identical setup, settlements included.</p>
+<p><b>Is it free?</b> Free, no signup, open source. One HTML file, runs entirely in your browser.</p>
+</details></footer>
 
 <script>
 (() => {
@@ -256,8 +317,20 @@ let rnd=Math.random;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
 /* ---------- board data ---------- */
-const RES={wood:"var(--wood)",brick:"var(--brick)",wheat:"var(--wheat)",sheep:"var(--sheep)",ore:"var(--ore)",desert:"var(--desert)"};
-const RESNAME={wood:"Wood",brick:"Brick",wheat:"Wheat",sheep:"Sheep",ore:"Ore",desert:"Desert"};
+const RES={wood:"var(--wood)",brick:"var(--brick)",wheat:"var(--wheat)",sheep:"var(--sheep)",ore:"var(--ore)",desert:"var(--desert)",gold:"var(--gold)",sea:"var(--seahex)"};
+const RESNAME={wood:"Wood",brick:"Brick",wheat:"Wheat",sheep:"Sheep",ore:"Ore",desert:"Desert",gold:"Gold",sea:"Sea"};
+const BASE_RES=["wood","brick","wheat","sheep","ore"];
+/* Seafarers "Heading for New Shores" — transcribed from the official rulebooks
+   (Seafarers 2021 3-4p, pp.8-10; Seafarers 5-6 Player Extension 2020, pp.6-7).
+   grid: flat-top hexes, one string per row; '.'=no hex, '~'=sea (fixed),
+   'm'=main-island slot, 'i'=small-island slot. Even columns sit half a hex LOWER.
+   Terrain pools and the two token sets match the rulebook component tables exactly
+   (main / red island numbers). portEdges = fixed harbor positions from the diagrams,
+   {r,c,k}: hex at grid[r][c], edge k (0=lower-right,1=bottom,2=lower-left,
+   3=upper-left,4=top,5=upper-right); port TYPES are drawn at random from portPool,
+   as the rulebook shuffles harbor tokens face-down. A couple of outer sea hexes are
+   printed on the physical frame rather than loose tiles — identical in play.
+   pirate = [r,c] sea hex where the scenario diagram parks the pirate. */
 const SETUPS={
   base:{rows:[3,4,5,4,3],
     res:{wood:4,sheep:4,wheat:4,brick:3,ore:3,desert:1},
@@ -267,19 +340,84 @@ const SETUPS={
   ext:{rows:[3,4,5,6,5,4,3],
     res:{wood:6,sheep:6,wheat:6,brick:5,ore:5,desert:2},
     tokens:[2,2,3,3,3,4,4,4,5,5,5,6,6,6,8,8,8,9,9,9,10,10,10,11,11,11,12,12],
-    portSeq:["any","brick","sheep","wood","any","wheat","any","ore","any","sheep","any"]}
+    portSeq:["any","brick","sheep","wood","any","wheat","any","ore","any","sheep","any"]},
+  sea3:{grid:[
+      "....~...",
+      "..mmm~~.",
+      ".mmmmm~i",
+      ".mmmmm~i",
+      ".~~m~~i~",
+      ".ii~iii~",
+      "...~~~.."],
+    res:{main:{wood:3,sheep:4,wheat:3,brick:2,ore:2},
+         island:{gold:2,wheat:1,brick:2,ore:2,sheep:1}},
+    tokens:{main:[2,3,4,5,5,6,6,8,8,9,10,10,11,11],
+            island:[3,4,4,5,8,9,10,12]},
+    portEdges:[{r:1,c:3,k:3},{r:1,c:3,k:5},{r:2,c:1,k:4},{r:2,c:5,k:4},
+               {r:3,c:1,k:3},{r:3,c:1,k:1},{r:3,c:5,k:1},{r:4,c:3,k:0}],
+    portPool:["any","any","any","wood","brick","wheat","sheep","ore"],
+    pirate:[6,4]},
+  sea4:{grid:[
+      "....~...",
+      "..mmm~~.",
+      ".mmmmm~i",
+      ".mmmmm~i",
+      ".mmmmm~~",
+      ".~~m~~ii",
+      ".ii~iii~",
+      "...~~~.."],
+    res:{main:{wood:4,sheep:4,wheat:4,brick:3,ore:3,desert:1},
+         island:{gold:2,wood:1,sheep:1,wheat:1,brick:2,ore:2}},
+    tokens:{main:[2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12],
+            island:[2,3,4,5,6,8,9,10,11]},
+    portEdges:[{r:1,c:2,k:4},{r:1,c:4,k:4},{r:2,c:1,k:3},{r:2,c:5,k:5},
+               {r:3,c:1,k:2},{r:3,c:5,k:0},{r:4,c:2,k:2},{r:4,c:4,k:0},{r:5,c:3,k:1}],
+    portPool:["any","any","any","any","wood","brick","wheat","sheep","ore"],
+    pirate:[7,4]},
+  sea56:{grid:[
+      "....~....",
+      ".~ii~ii..",
+      ".i~~m~~i.",
+      "~~mmmmm~~",
+      "~mmmmmmm~",
+      "~mmmmmmm~",
+      "~mmmmmmm~",
+      ".~~mmm~~.",
+      ".i~~~~~i.",
+      "...i~i~.."],
+    res:{main:{wood:6,sheep:6,wheat:6,brick:5,ore:5,desert:2},
+         island:{gold:3,wood:1,sheep:1,wheat:1,brick:2,ore:2}},
+    tokens:{main:[2,2,3,3,3,4,4,4,5,5,5,6,6,6,8,8,8,9,9,9,10,10,10,11,11,11,12,12],
+            island:[2,3,4,5,6,8,9,10,11,12]},
+    portEdges:[{r:2,c:4,k:3},{r:3,c:5,k:4},{r:3,c:2,k:3},{r:5,c:1,k:3},
+               {r:6,c:1,k:2},{r:6,c:2,k:1},{r:7,c:4,k:2},{r:7,c:5,k:1},
+               {r:5,c:7,k:0},{r:6,c:6,k:0},{r:3,c:6,k:5}],
+    portPool:["any","any","any","any","any","wood","brick","wheat","ore","sheep","sheep"],
+    pirate:null}
 };
 const PIPS={2:1,3:2,4:3,5:4,6:5,8:5,9:4,10:3,11:2,12:1};
 const PLAYERCOLORS=[["Red","#c0392b"],["Blue","#2e6da4"],["White","#e8e6df"],["Orange","#d98032"],["Green","#4c9a52"],["Brown","#8a5a3b"]];
 
-/* ---------- geometry (pointy-top) ---------- */
+/* ---------- geometry (pointy-top classic, flat-top scenario grids) ---------- */
 const S=52, W=Math.sqrt(3)*S;
-function buildGeom(rows){
-  const hexes=[];
-  rows.forEach((len,r)=>{for(let i=0;i<len;i++)
-    hexes.push({x:(i-(len-1)/2)*W, y:r*1.5*S, id:hexes.length});});
+function buildGeom(setup){
+  const hexes=[]; let cellIndex=null;
+  if(setup.grid){
+    // flat-top offset grid, even columns half a hex lower (matches the rulebook diagrams)
+    cellIndex=new Map();
+    setup.grid.forEach((row,r)=>{for(let c=0;c<row.length;c++){
+      const ch=row[c]; if(ch===".")continue;
+      const region=ch==="m"?"main":ch==="i"?"island":"sea";
+      cellIndex.set(r+","+c,hexes.length);
+      hexes.push({x:c*1.5*S, y:r*W+(c%2===0?W/2:0), id:hexes.length, region});
+    }});
+  }else{
+    setup.rows.forEach((len,r)=>{for(let i=0;i<len;i++)
+      hexes.push({x:(i-(len-1)/2)*W, y:r*1.5*S, id:hexes.length, region:"main"});});
+  }
+  const flat=!!setup.grid;
   for(const h of hexes){h.corners=[];for(let k=0;k<6;k++){
-    const a=Math.PI/180*(60*k-30);
+    const a=Math.PI/180*(flat?60*k:60*k-30);
     h.corners.push([h.x+S*Math.cos(a), h.y+S*Math.sin(a)]);}}
   // dedupe vertices
   const vmap=new Map(), verts=[];
@@ -295,27 +433,49 @@ function buildGeom(rows){
   for(const h of hexes) for(let k=0;k<6;k++){
     const a=h.vids[k], b=h.vids[(k+1)%6];
     verts[a].adj.add(b); verts[b].adj.add(a);}
-  return {hexes,verts};
+  const geom={hexes,verts,cellIndex};
+  if(setup.grid){
+    // Seafarers: starting settlements (and road targets) live on the main island only
+    geom.mainVertIds=new Set();
+    verts.forEach((v,i)=>{
+      const regs=v.hexes.map(hid=>hexes[hid].region);
+      if(regs.includes("main")&&!regs.includes("island"))geom.mainVertIds.add(i);
+    });
+  }
+  return geom;
 }
 
-/* ---------- resource placement: no same-type neighbours, keep 2:1 ports off their own resource ---------- */
+/* ---------- resource placement: no same-type neighbours, keep 2:1 ports off their own resource ----------
+   Seafarers grids place two independent pools (main island / small islands) into their own
+   slots; sea hexes are fixed and never enter the search. */
 function placeResources(geom,setup,ports){
-  const pool=[];
-  for(const[r,n]of Object.entries(setup.res))for(let i=0;i<n;i++)pool.push(r);
+  const regions=setup.grid
+    ?[{slots:geom.hexes.filter(h=>h.region==="main").map(h=>h.id),pool:setup.res.main},
+      {slots:geom.hexes.filter(h=>h.region==="island").map(h=>h.id),pool:setup.res.island}]
+    :[{slots:geom.hexes.map(h=>h.id),pool:setup.res}];
   const portTouch=ports.filter(p=>p.type!=="any").map(p=>({type:p.type,
     hexes:[...new Set([...geom.verts[p.a].hexes,...geom.verts[p.b].hexes])]}));
   const bad=arr=>{let v=0;
     for(const h of geom.hexes)for(const j of h.adj)
-      if(j>h.id && arr[h.id]===arr[j]) v++;
+      if(j>h.id && arr[h.id]!=="sea" && arr[h.id]===arr[j]) v++;
     for(const pt of portTouch)for(const hid of pt.hexes)
       if(arr[hid]===pt.type) v++;
     return v;};
   let best=null,bestV=1e9;
   for(let attempt=0;attempt<40;attempt++){
-    const arr=shuffle(pool.slice());
+    const arr=[];
+    for(const h of geom.hexes)if(h.region==="sea")arr[h.id]="sea";
+    for(const rg of regions){
+      const p=[];
+      for(const[r,n]of Object.entries(rg.pool))for(let i=0;i<n;i++)p.push(r);
+      shuffle(p); rg.slots.forEach((id,i)=>arr[id]=p[i]);
+    }
     let v=bad(arr);
     for(let it=0;it<600&&v>0;it++){
-      const i=Math.floor(rnd()*arr.length), j=Math.floor(rnd()*arr.length);
+      // extra rnd() draw only on multi-region boards, so classic seeds reproduce exactly
+      const rg=regions.length>1?regions[Math.floor(rnd()*regions.length)]:regions[0];
+      const i=rg.slots[Math.floor(rnd()*rg.slots.length)],
+            j=rg.slots[Math.floor(rnd()*rg.slots.length)];
       if(arr[i]===arr[j])continue;
       [arr[i],arr[j]]=[arr[j],arr[i]];
       const nv=bad(arr);
@@ -327,13 +487,22 @@ function placeResources(geom,setup,ports){
   return best;
 }
 
-/* ---------- number placement ---------- */
+/* ---------- number placement ----------
+   Seafarers grids carry two independent token sets (main island / small islands,
+   the rulebook's black and red numbers); tokens stay inside their region. Sea and
+   desert hexes carry no token; gold fields do. */
 function placeNumbers(geom,setup,resArr){
-  const land=geom.hexes.filter(h=>resArr[h.id]!=="desert").map(h=>h.id);
+  const regions=setup.grid
+    ?[{ids:geom.hexes.filter(h=>h.region==="main"&&resArr[h.id]!=="desert").map(h=>h.id),
+       toks:setup.tokens.main},
+      {ids:geom.hexes.filter(h=>h.region==="island").map(h=>h.id),
+       toks:setup.tokens.island}]
+    :[{ids:geom.hexes.filter(h=>resArr[h.id]!=="desert").map(h=>h.id),toks:setup.tokens}];
+  const land=regions.flatMap(rg=>rg.ids);
   const score=num=>{
     let s=0;
     for(const id of land){const h=geom.hexes[id],a=num[id];
-      for(const j of h.adj){ if(j<=id||resArr[j]==="desert")continue;
+      for(const j of h.adj){ if(j<=id||num[j]==null)continue;
         const b=num[j];
         if((a===6||a===8)&&(b===6||b===8)) s+=100;
         if(a===b) s+=8;
@@ -349,11 +518,15 @@ function placeNumbers(geom,setup,resArr){
   };
   let best=null,bestS=1e9;
   for(let attempt=0;attempt<25;attempt++){
-    const toks=shuffle(setup.tokens.slice());
-    const num={}; land.forEach((id,i)=>num[id]=toks[i]);
+    const num={};
+    for(const rg of regions){
+      const toks=shuffle(rg.toks.slice());
+      rg.ids.forEach((id,i)=>num[id]=toks[i]);
+    }
     let s=score(num);
     for(let it=0;it<1200;it++){
-      const i=land[Math.floor(rnd()*land.length)], j=land[Math.floor(rnd()*land.length)];
+      const rg=regions.length>1?regions[Math.floor(rnd()*regions.length)]:regions[0];
+      const i=rg.ids[Math.floor(rnd()*rg.ids.length)], j=rg.ids[Math.floor(rnd()*rg.ids.length)];
       if(num[i]===num[j])continue;
       [num[i],num[j]]=[num[j],num[i]];
       const ns=score(num);
@@ -365,8 +538,21 @@ function placeNumbers(geom,setup,resArr){
   return best;
 }
 
-/* ---------- ports: fixed layout matching the physical frame ---------- */
-function placePorts(geom,portSeq){
+/* ---------- ports: fixed layout matching the physical frame ----------
+   Seafarers: harbor POSITIONS are fixed by the scenario diagram (portEdges);
+   harbor TYPES are drawn at random from the official pool, like shuffling the
+   tokens face-down. */
+function placePorts(geom,setup){
+  if(setup.portEdges){
+    const types=shuffle(setup.portPool.slice());
+    return setup.portEdges.map((pe,i)=>{
+      const h=geom.hexes[geom.cellIndex.get(pe.r+","+pe.c)];
+      const a=h.vids[pe.k], b=h.vids[(pe.k+1)%6];
+      const va=geom.verts[a], vb=geom.verts[b];
+      return {a,b,hex:h.id,mx:(va.x+vb.x)/2,my:(va.y+vb.y)/2,type:types[i]};
+    });
+  }
+  const portSeq=setup.portSeq;
   const ecount=new Map(), einfo=new Map();
   for(const h of geom.hexes) for(let k=0;k<6;k++){
     const a=h.vids[k], b=h.vids[(k+1)%6];
@@ -393,7 +579,7 @@ const portStatic=ty=>ty==null?0:(ty==="any"?1.0:1.5);
 function vertexInfo(geom,resArr,num,vid){
   const v=geom.verts[vid];let pips=0;const res=new Set(),chips=[];
   for(const hid of v.hexes){const r=resArr[hid];
-    if(r==="desert")continue;
+    if(num[hid]==null)continue; // desert and sea carry no token; gold does
     pips+=PIPS[num[hid]]; res.add(r); chips.push([r,num[hid]]);}
   return {pips,res,chips};
 }
@@ -419,7 +605,8 @@ function drawSettlements(geom,resArr,num,nPlayers,portMap){
       const redp=inf.chips.filter(([,n])=>n===6||n===8).length*5;
       return {vid:i,pips:inf.pips,res:inf.res,chips:inf.chips,port,redp,
         s:inf.pips+inf.res.size*0.7+portStatic(port)+rnd()*1.4};
-    }).filter(o=>o.pips>=3).sort((a,b)=>b.s-a.s);
+    }).filter(o=>o.pips>=3&&(!geom.mainVertIds||geom.mainVertIds.has(o.vid)))
+      .sort((a,b)=>b.s-a.s);
     const blocked=new Set(),picked=[];
     for(const o of scored){
       if(blocked.has(o.vid))continue;
@@ -471,8 +658,10 @@ function planRoads(geom,resArr,num,pairs,portMap){
   const findTarget=(spot,ignoreClaims)=>{
     let best=null;
     for(const v2 of geom.verts[spot.vid].adj){
+      if(geom.mainVertIds&&!geom.mainVertIds.has(v2))continue; // roads stay on the main island
       for(const v3 of geom.verts[v2].adj){
         if(v3===spot.vid||blocked.has(v3))continue;
+        if(geom.mainVertIds&&!geom.mainVertIds.has(v3))continue;
         if(!ignoreClaims&&claimed.has(v3))continue;
         const inf=vertexInfo(geom,resArr,num,v3);
         if(inf.pips<1)continue;
@@ -488,7 +677,8 @@ function planRoads(geom,resArr,num,pairs,portMap){
       let best=findTarget(spot,false);      // prefer a spot nobody else aims at
       if(best)claimed.add(best.target);
       else best=findTarget(spot,true)       // contested spot beats no spot
-        ||{to:[...geom.verts[spot.vid].adj][0],target:null,val:0,pips:0,chips:[]};
+        ||{to:[...geom.verts[spot.vid].adj].find(v=>!geom.mainVertIds||geom.mainVertIds.has(v))
+             ??[...geom.verts[spot.vid].adj][0],target:null,val:0,pips:0,chips:[]};
       spot.road=best;
     }
   }
@@ -500,7 +690,7 @@ const NS="http://www.w3.org/2000/svg";
 function el(name,attrs,parent){const e=document.createElementNS(NS,name);
   for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);
   (parent||svg).appendChild(e);return e;}
-function render(geom,resArr,num,ports,placement){
+function render(geom,resArr,num,ports,placement,setup){
   svg.innerHTML="";
   const xs=geom.verts.map(v=>v.x),ys=geom.verts.map(v=>v.y);
   const pad=40;
@@ -511,9 +701,15 @@ function render(geom,resArr,num,ports,placement){
   for(const h of geom.hexes){
     const r=resArr[h.id];
     el("polygon",{points:h.corners.map(c=>c.join(",")).join(" "),
-      fill:RES[r],stroke:"rgba(30,25,15,.35)","stroke-width":2.2,
-      "stroke-linejoin":"round"});
-    if(r!=="desert"){
+      fill:RES[r],stroke:r==="sea"?"rgba(30,25,15,.16)":"rgba(30,25,15,.35)",
+      "stroke-width":2.2,"stroke-linejoin":"round"});
+    if(r==="gold"){ // sparkle so gold never reads as wheat
+      const s1=el("text",{x:h.x-20,y:h.y-16,"text-anchor":"middle","font-size":13,
+        fill:"rgba(120,90,10,.9)"});s1.textContent="✦";
+      const s2=el("text",{x:h.x+20,y:h.y+22,"text-anchor":"middle","font-size":9,
+        fill:"rgba(120,90,10,.75)"});s2.textContent="✦";
+    }
+    if(num[h.id]!=null){
       const n=num[h.id],red=n===6||n===8;
       el("circle",{cx:h.x,cy:h.y,r:15.5,fill:"var(--token)",
         stroke:"rgba(30,25,15,.3)","stroke-width":1});
@@ -525,13 +721,25 @@ function render(geom,resArr,num,ports,placement){
       for(let p=0;p<pips;p++)
         el("circle",{cx:h.x+(p-(pips-1)/2)*3.6,cy:h.y+9.5,r:1.15,
           fill:red?"#c0392b":"var(--token-ink)"});
-    } else if(!desertDone){ desertDone=true;
+    } else if(r==="desert"&&!desertDone){ desertDone=true;
       const g=el("g",{transform:`translate(${h.x},${h.y})`});
       el("circle",{cx:0,cy:0,r:9,fill:"rgba(40,35,28,.75)"},g);
       el("circle",{cx:0,cy:-9,r:4.5,fill:"rgba(40,35,28,.75)"},g);
       const t=el("text",{x:0,y:24,"text-anchor":"middle","font-size":8,
         fill:"rgba(40,35,28,.8)","font-weight":600},g);
       t.textContent="ROBBER";
+    }
+  }
+  // pirate start hex (Seafarers scenario diagram position)
+  if(setup&&setup.pirate&&geom.cellIndex){
+    const hid=geom.cellIndex.get(setup.pirate[0]+","+setup.pirate[1]);
+    if(hid!=null){const h=geom.hexes[hid];
+      const g=el("g",{transform:`translate(${h.x},${h.y})`});
+      el("path",{d:"M -11 2 L 11 2 L 6 9 L -6 9 Z",fill:"rgba(25,22,18,.85)"},g);
+      el("path",{d:"M 0 2 L 0 -12 L 8 -4 L 1 -4",fill:"rgba(25,22,18,.85)"},g);
+      const t=el("text",{x:0,y:22,"text-anchor":"middle","font-size":8,
+        fill:"var(--muted)","font-weight":600},g);
+      t.textContent="PIRATE";
     }
   }
   // ports on the coast
@@ -586,7 +794,7 @@ function renderPanel(geom,resArr,num,portMap,placement){
   placement.pairs.forEach((pair,pi)=>{
     const[name,color]=PLAYERCOLORS[pi];
     const covered=new Set([...pair[0].res,...pair[1].res]);
-    const missing=Object.keys(RESNAME).filter(r=>r!=="desert"&&!covered.has(r));
+    const missing=BASE_RES.filter(r=>!covered.has(r));
     const card=document.createElement("div");card.className="card player";
     const chipsOf=list=>list.map(([r,n])=>
       `<span class="chip"><span class="dot" style="background:${RES[r]}"></span>${n}</span>`).join("");
@@ -624,7 +832,7 @@ function renderPanel(geom,resArr,num,portMap,placement){
       (sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)} pips each ·
       <b>${starter} starts first</b>, then weakest to strongest</small></div>`;
 }
-function renderBoardPanel(){
+function renderBoardPanel(isSea){
   document.getElementById("fairCard").innerHTML=
     `<span class="big">⚓</span><div><span class="pill good">Balanced board</span>
      <small>Fair board and ports. Everyone drafts their own settlements, so no corner is a
@@ -637,41 +845,48 @@ function renderBoardPanel(){
        gap:.3rem;font-size:.85rem;color:var(--muted)">
        <li>No 6/8 touching, no twin numbers touching, no 2 beside 12</li>
        <li>No same-resource clumps, even pip share across all five resources</li>
-       <li>Ports fixed to the real frame, 2:1s kept off their own resource</li>
+       ${isSea
+         ?`<li>Harbors on the official scenario edges, types shuffled, 2:1s kept off their own resource</li>
+           <li>Main island and small islands each use their official tile and number sets</li>`
+         :`<li>Ports fixed to the real frame, 2:1s kept off their own resource</li>`}
      </ul></div>`;
 }
 
 /* ---------- orchestration ---------- */
-let state={players:4,mode:"fair",seed:null,board:null,placement:null};
+let state={players:4,mode:"fair",map:"classic",seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
 function generate(fullBoard){
   if(fullBoard||!state.board){
-    rnd=mulberry32(xmur3(state.seed+"|"+state.players)());
-    const setup=state.players>=5?SETUPS.ext:SETUPS.base;
-    const geom=buildGeom(setup.rows);
-    const ports=placePorts(geom,setup.portSeq);
+    // classic seeds keep their pre-Seafarers namespace so old shared links reproduce
+    rnd=mulberry32(xmur3(state.seed+"|"+state.players+(state.map==="sea"?"|sea":""))());
+    const setup=state.map==="sea"
+      ?(state.players>=5?SETUPS.sea56:state.players===4?SETUPS.sea4:SETUPS.sea3)
+      :(state.players>=5?SETUPS.ext:SETUPS.base);
+    const geom=buildGeom(setup);
+    const ports=placePorts(geom,setup);
     const resArr=placeResources(geom,setup,ports);
     const num=placeNumbers(geom,setup,resArr);
     const portMap=new Map();
     for(const p of ports){portMap.set(p.a,p.type);portMap.set(p.b,p.type);}
     state.board={setup,geom,resArr,num,ports,portMap};
   }
-  const {geom,resArr,num,ports,portMap}=state.board;
+  const {setup,geom,resArr,num,ports,portMap}=state.board;
   const fair=state.mode!=="board";
+  document.body.dataset.map=state.map;
   document.getElementById("reroll").style.display=fair?"":"none";
   document.getElementById("methodCard").style.display=fair?"":"none";
   if(fair){
     state.placement=drawSettlements(geom,resArr,num,state.players,portMap);
     planRoads(geom,resArr,num,state.placement.pairs,portMap);
-    render(geom,resArr,num,ports,state.placement);
+    render(geom,resArr,num,ports,state.placement,setup);
     renderPanel(geom,resArr,num,portMap,state.placement);
   }else{
     state.placement=null;
-    render(geom,resArr,num,ports,null);
-    renderBoardPanel();
+    render(geom,resArr,num,ports,null,setup);
+    renderBoardPanel(state.map==="sea");
   }
   document.getElementById("seedLabel").textContent=state.seed;
-  const mp=state.mode==="board"?"&m=board":"";
+  const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"");
   try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
 }
 function readHash(){
@@ -679,11 +894,17 @@ function readHash(){
   if(m.s)state.seed=m.s;
   if(m.p&&+m.p>=3&&+m.p<=6)state.players=+m.p;
   if(m.m==="board")state.mode="board";
+  if(m.map==="sea")state.map="sea";
 }
 document.getElementById("players").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   document.querySelectorAll("#players button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   state.players=+b.dataset.n; state.board=null; generate(true);
+});
+document.getElementById("map").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#map button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  state.map=b.dataset.map; state.board=null; generate(true);
 });
 document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true)};
 document.getElementById("reroll").onclick=()=>generate(false);
@@ -693,19 +914,22 @@ document.getElementById("mode").addEventListener("click",e=>{
   state.mode=b.dataset.mode; generate(false);
 });
 document.getElementById("copy").onclick=async e=>{
-  const mp=state.mode==="board"?"&m=board":"";
+  const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"");
   const link=location.href.split("#")[0]+`#s=${state.seed}&p=${state.players}${mp}`;
   try{await navigator.clipboard.writeText(link);e.target.textContent="Copied ✓";}
   catch(_){e.target.textContent=link;}
   setTimeout(()=>e.target.textContent="Copy link",2500);
 };
-/* test hook: drives the exact production pipeline for a given seed/player count */
-window.__hm={run(seed,players){
-  state.seed=seed; state.players=players; state.mode="fair"; state.board=null;
+/* test hook: drives the exact production pipeline for a given seed/player count/map */
+window.__hm={run(seed,players,map){
+  state.seed=seed; state.players=players; state.mode="fair"; state.map=map==="sea"?"sea":"classic";
+  state.board=null;
   generate(true);
   const {geom,resArr,num,ports}=state.board;
   return {
-    hexes:geom.hexes.map(h=>({id:h.id,adj:h.adj,res:resArr[h.id],num:num[h.id]??null})),
+    ...(state.map==="sea"?{map:"sea"}:{}), // classic return shape unchanged (golden tests)
+    hexes:geom.hexes.map(h=>({id:h.id,adj:h.adj,res:resArr[h.id],num:num[h.id]??null,
+      ...(state.map==="sea"?{region:h.region}:{})})),
     verts:geom.verts.map(v=>({hexes:v.hexes,adj:[...v.adj]})),
     ports:ports.map(p=>({a:p.a,b:p.b,type:p.type})),
     pairs:state.placement.pairs.map(pr=>pr.map(s=>({vid:s.vid,pips:s.pips,port:s.port,
@@ -719,6 +943,8 @@ document.querySelectorAll("#players button").forEach(b=>
   b.setAttribute("aria-pressed",+b.dataset.n===state.players));
 document.querySelectorAll("#mode button").forEach(b=>
   b.setAttribute("aria-pressed",b.dataset.mode===state.mode));
+document.querySelectorAll("#map button").forEach(b=>
+  b.setAttribute("aria-pressed",b.dataset.map===state.map));
 generate(true);
 })();
 </script>

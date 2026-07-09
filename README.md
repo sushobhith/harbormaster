@@ -31,6 +31,9 @@ Every online generator will hand you a *board*. Not one of them tells each playe
 **Harbormaster deals the entire setup and proves it is fair before the first roll.**
 
 - 🎲 A balanced board — no clustered red numbers, no resource deserts, even pip spread.
+- ⛵ **Seafarers support** — the official *Heading for New Shores* scenario for 3–6 players:
+  main island, small islands, gold fields, both number-token sets, harbors on the official
+  scenario edges. Same fairness engine, starting settlements on the main island per the rules.
 - ⚓ **Fixed ports read off a real physical frame**, so the screen matches the wood on your table.
 - ⬡ **Two starting settlements and two roads per player**, matched so nobody starts ahead. Or flip to **Board only** and place your own, if you like the placement duel.
 - 🥇 A suggested turn order that hands first move to the weakest hand.

@@ -25,11 +25,12 @@ async function audit(page, label) {
         const a = hexNum[i], b = hexNum[j];
         if ([6, 8].includes(a) && [6, 8].includes(b)) redAdj++;
         if (a && a === b) twinAdj++;
-        if (hexes[i].fill === hexes[j].fill) sameResAdj++;
+        // adjacent sea tiles are legal; everything else same-fill adjacent is a clump
+        if (hexes[i].fill === hexes[j].fill && hexes[i].fill !== 'var(--seahex)') sameResAdj++;
       }
     }
-    // settlements: g elements with path (house)
-    const houses = [...svg.querySelectorAll('g')].filter(g => g.querySelector('path'))
+    // settlements: g elements with the house path (not the pirate glyph)
+    const houses = [...svg.querySelectorAll('g')].filter(g => g.querySelector('path[d^="M -8 8"]'))
       .map(g => {
         const m = g.getAttribute('transform').match(/translate\(([-\d.e+]+),([-\d.e+]+)\)/i);
         return { x: +m[1], y: +m[2], player: g.querySelector('text').textContent };
@@ -60,6 +61,18 @@ for (const [scheme, suffix] of [['light', 'light'], ['dark', 'dark']]) {
     await page.waitForTimeout(1200);
     await audit(page, '4 players light');
     await page.screenshot({ path: `${dir}/render-4p-light.png`, fullPage: true });
+  }
+  // Seafarers map
+  await page.goto('about:blank');
+  await page.goto(`file://${dir}/index.html#s=gamenite&p=4&map=sea`);
+  await page.waitForTimeout(1200);
+  await audit(page, `4 players seafarers ${scheme}`);
+  await page.screenshot({ path: `${dir}/render-sea4-${suffix}.png`, fullPage: true });
+  if (scheme === 'light') {
+    await page.click('#players button[data-n="6"]');
+    await page.waitForTimeout(1200);
+    await audit(page, '6 players seafarers light');
+    await page.screenshot({ path: `${dir}/render-sea6-light.png`, fullPage: true });
   }
   await page.close();
 }

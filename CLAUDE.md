@@ -2,7 +2,8 @@
 
 Single-file static web app that generates balanced Catan boards with **pre-assigned starting
 settlements, roads, and fixed ports** for 3–6 players. Built July 2026 for Sushobhith's game
-group (they play 4-player base and 6-player extension).
+group (they play 4-player base and 6-player extension). Seafarers "Heading for New Shores"
+mode added 2026-07-09 (requested on Reddit by a 5-player Seafarers group).
 
 - **Live (canonical):** https://harbormaster.vercel.app — Vercel project `harbormaster`
   (sushobhiths-projects; renamed from `fairhex` 2026-07-06, and `ssoProtection` disabled so the
@@ -39,10 +40,17 @@ This tool's whole point: **everything decided before the game — board, numbers
 One `<script>` IIFE, sections in order:
 
 1. **RNG** — seeded (xmur3 + mulberry32). Same `#s=<seed>&p=<players>` URL ⇒ identical setup.
+   Seed namespace is `seed|players` for classic and `seed|players|sea` for Seafarers — the
+   `|sea` suffix is appended ONLY for sea maps so pre-Seafarers shared links keep their boards.
 2. **Data (`SETUPS`)** — `base` (19 hex, rows 3-4-5-4-3) and `ext` (30 hex, rows 3-4-5-6-5-4-3),
-   official resource counts and token sets, and `portSeq` (see Ports below).
-3. **Geometry (`buildGeom`)** — pointy-top hexes, side S=52; dedupes vertices, builds
-   hex-adjacency and vertex-adjacency (edges). Vertex distance rule = adjacency in that graph.
+   official resource counts and token sets, and `portSeq` (see Ports below). Plus Seafarers
+   `sea3`/`sea4`/`sea56` (see Seafarers section).
+3. **Geometry (`buildGeom`)** — takes the whole `setup`. Classic: pointy-top hexes from `rows`.
+   Seafarers: flat-top hexes from `grid` strings (matches rulebook diagram orientation), even
+   columns half a hex lower; each hex gets `region` (main/island/sea) and geom gains
+   `mainVertIds` (vertices touching main land, none island) + `cellIndex` (r,c → hex id).
+   Side S=52 both ways; dedupes vertices, builds hex-adjacency and vertex-adjacency (edges).
+   Vertex distance rule = adjacency in that graph.
 4. **Generation pipeline** (order matters):
    `placePorts` (fixed) → `placeResources` (local search: no same-resource neighbours AND no
    resource touching its own 2:1 port) → `placeNumbers` (local search: no adjacent 6/8, no
@@ -65,8 +73,12 @@ One `<script>` IIFE, sections in order:
    draft their own — `render(...,null)` skips settlements/roads, `renderBoardPanel()` replaces
    the aside, reroll + method cards hidden). Added 2026-07-07 in response to r/Catan feedback
    that placement is core skill; board-only mode keeps the board balance without removing the draft.
-9. **Test hook** — `window.__hm.run(seed, players)` drives the real pipeline and returns
-   raw board data. This is what the test harness uses; don't remove it.
+   **Two maps** (`state.map`, toggle in toolbar, `&map=sea` in hash): `classic` and `sea`
+   (Seafarers New Shores). Map is orthogonal to mode. `body[data-map]` drives `.sea-only` /
+   `.classic-only` legend, cheat-sheet, and footer swaps.
+9. **Test hook** — `window.__hm.run(seed, players, map="classic")` drives the real pipeline and
+   returns raw board data (+ `region` per hex and `map` echo on sea maps only — the classic
+   return shape is frozen by the golden test). This is what the test harness uses; don't remove it.
 
 ## Ports — photo-verified, DO NOT re-randomize
 
@@ -83,12 +95,41 @@ Positions: perimeter edge index `round(i * perimeterLen / nPorts)` — 30 edges/
 are high confidence, wood-vs-sheep on adjacent tokens was resolved by inventory. If the user
 reports a mismatch, fix the single entry in `portSeq`.
 
+## Seafarers — "Heading for New Shores" (added 2026-07-09)
+
+`SETUPS.sea3/sea4/sea56` encode the official scenario, transcribed from the rulebook PDFs
+(Seafarers 2021 3-4p pp.8-10; Seafarers 5-6 Extension 2020 pp.6-7) by overlaying a labeled
+hex lattice on 150-200dpi page renders. Verified against the component tables: terrain pools,
+both number-token sets (main/island), harbor counts all match exactly.
+
+- `grid` strings: flat-top cells, `.`=none `~`=sea `m`=main `i`=island; even columns half a
+  hex LOWER. 3p: 14 main + 8 island + 15 sea; 4p: 19 (incl. 1 desert) + 9 + 16; 5-6p: the
+  classic ext island (30) + 10 island (3 gold) + sea ring. A couple of outer sea hexes are
+  printed on the physical frame rather than loose tiles — same in play; if a user reports an
+  outer-ring mismatch vs their frame, tweak the grid string, it's cosmetic only.
+- **Harbors**: positions fixed from the diagram (`portEdges` {r,c,k}, k: 0=lower-right,
+  1=bottom, 2=lower-left, 3=upper-left, 4=top, 5=upper-right); TYPES random from `portPool`
+  (rulebook shuffles tokens face-down). 2:1-off-own-resource constraint still applies.
+- **Rules honored**: starting settlements + road targets on the main island only
+  (`geom.mainVertIds` filters in drawSettlements/planRoads); regions get their own resource
+  pools and token sets (swaps never cross regions); gold carries a token, counts full pips;
+  sea is fixed, exempt from same-resource adjacency; robber renders on first desert (3p has
+  none); pirate marker on the diagram hex (`pirate:[r,c]`, none for 5-6p).
+- **v1 simplifications** (documented in the cheat sheet): starting roads only (official rules
+  allow a ship instead); the 2-VP-per-island race isn't priced into start values.
+
 ## Testing (run before every deploy)
 
 ```bash
+node test/test_golden.mjs "$PWD"             # classic outputs byte-identical to the frozen baseline
 node test/test_balance.mjs "$PWD" 100        # from repo root; needs playwright importable
 node test/test_page.mjs "$PWD"               # render/theme/constraint smoke test
 ```
+
+`test_golden.mjs` compares classic `__hm.run` output hashes against
+`test/golden_classic.json` (captured 2026-07-09 pre-Seafarers). ANY classic diff = regression:
+it breaks every shared link and the photo-verified port frames. Re-capture the baseline only
+if a classic-visible change is intentional and announced.
 
 `test_balance.mjs` runs N seeds × {3,4,5,6} players through `__hm.run` and checks:
 - **Invariants (must be 0):** adjacent 6/8, adjacent twins, 2-next-12, same-resource
@@ -98,6 +139,17 @@ node test/test_page.mjs "$PWD"               # render/theme/constraint smoke tes
 - Determinism (same seed twice ⇒ identical) and zero page errors.
 
 Baseline results (2026-07-06, 400 setups): all invariants 0; value gap ≤2 in 99–100%.
+Seafarers baseline (2026-07-09, 100 seeds × 3/4/5/6p): all invariants 0 (incl. seaToken,
+badStart, badTarget, badScenario); value gap ≤1 in 93–98%, ≤2 in 100%; 17–53ms/setup.
+
+## SEO / analytics addenda (2026-07-09)
+
+Vercel Web Analytics tag added (`/_vercel/insights/script.js`) — the user must also enable
+Web Analytics in the Vercel dashboard (project `harbormaster` → Analytics) or the script 404s
+and no data collects. There is NO pre-2026-07-09 visitor data (nothing was ever installed).
+FAQ `<details>` in the footer + FAQPage JSON-LD in head; sitemap has `<lastmod>` — bump it on
+content deploys. Still user-action-pending: Google Search Console verification + sitemap
+submission, Bing import, Reddit/BGG backlinks.
 
 ## Backlog / ideas the user may ask for
 
