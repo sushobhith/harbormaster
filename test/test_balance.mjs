@@ -6,10 +6,23 @@ const PIPS = { 2:1, 3:2, 4:3, 5:4, 6:5, 8:5, 9:4, 10:3, 11:2, 12:1 };
 
 // expected Seafarers scenario composition (from the official rulebooks)
 const SEA_EXPECT = {
-  3: { hexes: 37, main: 14, island: 8, gold: 2, desert: 0, ports: 8 },
-  4: { hexes: 44, main: 19, island: 9, gold: 2, desert: 1, ports: 9 },
-  5: { hexes: 68, main: 30, island: 10, gold: 3, desert: 2, ports: 11 },
-  6: { hexes: 68, main: 30, island: 10, gold: 3, desert: 2, ports: 11 },
+  3: { hexes: 37, main: 14, island: 8, gold: 2, desert: 0, ports: 8,
+    mainToks: '2,3,4,5,5,6,6,8,8,9,10,10,11,11', islToks: '3,4,4,5,8,9,10,12',
+    mainRes: 'brick:2,ore:2,sheep:4,wheat:3,wood:3', islRes: 'brick:2,gold:2,ore:2,sheep:1,wheat:1' },
+  4: { hexes: 44, main: 19, island: 9, gold: 2, desert: 1, ports: 9,
+    mainToks: '2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12', islToks: '2,3,4,5,6,8,9,10,11',
+    mainRes: 'brick:3,desert:1,ore:3,sheep:4,wheat:4,wood:4', islRes: 'brick:2,gold:2,ore:2,sheep:1,wheat:1,wood:1' },
+  5: { hexes: 68, main: 30, island: 10, gold: 3, desert: 2, ports: 11,
+    mainToks: '2,2,3,3,3,4,4,4,5,5,5,6,6,6,8,8,8,9,9,9,10,10,10,11,11,11,12,12',
+    islToks: '2,3,4,5,6,8,9,10,11,12',
+    mainRes: 'brick:5,desert:2,ore:5,sheep:6,wheat:6,wood:6', islRes: 'brick:2,gold:3,ore:2,sheep:1,wheat:1,wood:1' },
+};
+SEA_EXPECT[6] = SEA_EXPECT[5];
+const multiset = a => a.slice().sort((x, y) => (x > y) - (x < y)).join(',');
+const resCount = hexes => {
+  const c = {};
+  for (const h of hexes) c[h.res] = (c[h.res] || 0) + 1;
+  return Object.keys(c).sort().map(r => `${r}:${c[r]}`).join(',');
 };
 
 function analyze(data, players) {
@@ -39,10 +52,21 @@ function analyze(data, players) {
       && (!touch(s.road.target, 'main') || touch(s.road.target, 'island'))).length;
     const e = SEA_EXPECT[players];
     const cnt = r => data.hexes.filter(h => h.region === r).length;
+    const mainHexes = data.hexes.filter(h => h.region === 'main');
+    const islHexes = data.hexes.filter(h => h.region === 'island');
     if (data.hexes.length !== e.hexes || cnt('main') !== e.main || cnt('island') !== e.island
       || data.hexes.filter(h => h.res === 'gold').length !== e.gold
       || data.hexes.filter(h => h.res === 'desert').length !== e.desert
-      || data.ports.length !== e.ports) badScenario = 1;
+      || data.ports.length !== e.ports
+      // exact rulebook multisets: token sets stay inside their region, pools never drift
+      || multiset(mainHexes.filter(h => h.num).map(h => h.num)) !== e.mainToks
+      || multiset(islHexes.map(h => h.num)) !== e.islToks
+      || resCount(mainHexes) !== e.mainRes
+      || resCount(islHexes) !== e.islRes
+      // every harbor must sit on a main-island coast vertex pair
+      || data.ports.some(p => ![p.a, p.b].every(v =>
+           data.verts[v].hexes.some(h => data.hexes[h].region === 'main')))
+    ) badScenario = 1;
   }
   let portViol = 0;
   for (const p of data.ports) {
