@@ -76,7 +76,7 @@ One `<script>` IIFE, sections in order:
    **Two maps** (`state.map`, toggle in toolbar, `&map=sea` in hash): `classic` and `sea`
    (Seafarers New Shores). Map is orthogonal to mode. `body[data-map]` drives `.sea-only` /
    `.classic-only` legend, cheat-sheet, and footer swaps.
-9. **Test hook** — `window.__hm.run(seed, players, map="classic")` drives the real pipeline and
+9. **Test hook** — `window.__hm.run(seed, players, map="classic", noPorts=false)` drives the real pipeline and
    returns raw board data (+ `region` per hex and `map` echo on sea maps only — the classic
    return shape is frozen by the golden test). This is what the test harness uses; don't remove it.
 
@@ -153,9 +153,23 @@ submission, Bing import, Reddit/BGG backlinks.
 
 ## Backlog / ideas the user may ask for
 
-- Toggle: forbid starting settlements on ports (pure production starts).
-- Print-friendly layout for the table.
-- Port position fine-tuning if a physical mismatch is reported (see Ports caveats).
+- Port position fine-tuning if a physical mismatch is reported (see Ports caveats) — same
+  applies to the Seafarers outer sea ring (cosmetic grid-string fix).
+- (Cleared 2026-07-09: Seafarers mode, no-port-starts toggle, print layout, snake-draft
+  stat on Board only, demo GIF refresh with mixed maps/player counts.)
+
+## Toolbar extras (2026-07-09)
+
+- **No port starts** (`#noPorts`, hash `&np=1`, fair mode only): filters port vertices out of
+  settlement candidates in `drawSettlements` (6th arg). Falls back to allowing ports if a
+  board can't seat everyone port-free. Filter runs after scoring, so RNG draws are unchanged
+  and golden stays intact with the toggle off.
+- **Print** (`#print`): `window.print()` + `@media print` block at the end of the stylesheet —
+  forces the light palette (overrides both dark mechanisms), hides toolbar/method/footer,
+  two-column cards, `print-color-adjust:exact` so hex fills survive.
+- **Board only** now shows a snake-draft spread ("a solid snake draft lands within ±N pips")
+  via `snakeSpread()` — same greedy model as the test baseline; no rnd() calls, so it can't
+  perturb determinism.
 
 ## User context
 

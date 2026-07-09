@@ -8,7 +8,14 @@ import fs from 'fs';
 
 const HOME = process.env.HOME;
 const URL = 'file://' + HOME + '/Documents/projects/harbormaster/index.html';
-const SEEDS = ['island', 'harbor', 'delta', 'reef', 'tide'];
+// mix of player counts and maps so the GIF shows the whole product
+const BOARDS = [
+  { seed: 'island', hash: 'p=4' },
+  { seed: 'harbor', hash: 'p=6' },
+  { seed: 'delta',  hash: 'p=4&map=sea' },
+  { seed: 'reef',   hash: 'p=6&map=sea' },
+  { seed: 'tide',   hash: 'p=4' },
+];
 const W = 1300, H = 940;
 const HOLD_MS = 1300, PRESS_MS = 180;
 
@@ -33,8 +40,9 @@ const setup = async (pressed) => p.evaluate((pressed) => {
   btn.style.filter = pressed ? 'brightness(.88)' : '';
 }, pressed);
 
-for (const seed of SEEDS) {
-  await p.goto(URL + '#s=' + seed + '&p=6');
+for (const { seed, hash } of BOARDS) {
+  await p.goto('about:blank');
+  await p.goto(URL + '#s=' + seed + '&' + hash);
   await p.waitForTimeout(1000);
   await setup(false);
   frames.push({ buf: await p.screenshot({ clip: { x: 0, y: 0, width: W, height: H } }), delay: HOLD_MS });

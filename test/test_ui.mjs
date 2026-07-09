@@ -113,7 +113,47 @@ await load('#s=xyz&p=9&m=junk&map=junk');
 s = await snap();
 check('invalid hash: defaults (4p classic fair)', s.pressed.includes('4') && s.pressed.includes('Classic') && s.pressed.includes('Fair settlements'));
 
-// --- 8. mobile viewport: no horizontal overflow ---
+// --- 8. no-port-starts toggle ---
+await load('#s=nptest&p=4');
+const withPorts = await snap();
+await page.click('#noPorts');
+s = await snap();
+check('noPorts: hash gains np=1', s.hash.includes('np=1'), s.hash);
+check('noPorts: board unchanged, placement re-dealt', hexSig(s.board) === hexSig(withPorts.board));
+const portFree = await page.evaluate(() => {
+  // every house must sit on a vertex with no port piers attached: recompute via test hook
+  const d = window.__hm.run('nptest', 4, 'classic', true);
+  const portVids = new Set(d.ports.flatMap(p => [p.a, p.b]));
+  return d.pairs.flat().every(sp => !portVids.has(sp.vid));
+});
+check('noPorts: no starting settlement touches a port', portFree);
+const npSeaFree = await page.evaluate(() => {
+  const d = window.__hm.run('nptest', 6, 'sea', true);
+  const portVids = new Set(d.ports.flatMap(p => [p.a, p.b]));
+  return d.pairs.flat().every(sp => !portVids.has(sp.vid));
+});
+check('noPorts: holds on 6p Seafarers too', npSeaFree);
+await load('#s=nptest&p=4&np=1');
+s = await snap();
+check('noPorts: hash restore presses button', await page.evaluate(() =>
+  document.getElementById('noPorts').getAttribute('aria-pressed') === 'true'));
+await page.click('#mode button[data-mode="board"]');
+check('noPorts: hidden in board mode', await page.evaluate(() =>
+  document.getElementById('noPorts').style.display === 'none'));
+
+// --- 9. board-only shows the snake-draft stat; print button + print CSS ---
+await load('#s=abc&p=4&m=board');
+check('board mode: snake-draft stat shown', await page.evaluate(() =>
+  /snake draft.*±\d/s.test(document.getElementById('fairCard').textContent)));
+check('print button exists', await page.evaluate(() => !!document.getElementById('print')));
+await page.emulateMedia({ media: 'print' });
+check('print: toolbar hidden', await page.evaluate(() =>
+  getComputedStyle(document.querySelector('.toolbar')).display === 'none'));
+check('print: footer hidden', await page.evaluate(() =>
+  getComputedStyle(document.querySelector('footer')).display === 'none'));
+await page.emulateMedia({ media: 'screen' });
+
+// --- 10. mobile viewport: no horizontal overflow ---
 const mob = await ctx.newPage();
 await mob.setViewportSize({ width: 390, height: 844 });
 await mob.goto(`file://${dir}/index.html#s=mobile&p=4&map=sea`);

@@ -8,6 +8,7 @@
 <meta name="keywords" content="catan board generator, fair catan board, catan setup generator, catan randomizer, settlers of catan generator, balanced catan board, catan starting settlements, catan 5-6 player generator, catan map generator, catan seafarers board generator, seafarers map generator, heading for new shores setup, catan expansion board">
 <link rel="canonical" href="https://harbormaster.vercel.app/">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="google-site-verification" content="fVmXoXK8LKsyB5JT6KQIy_UPfsYqBhS21jA5Tu-6j4Q">
 <meta name="author" content="Sushobhith Sharma">
 <meta name="theme-color" content="#c94f38">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
@@ -127,6 +128,7 @@
   .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);
     padding:.42rem .9rem;border-radius:8px;font:inherit;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
   .btn:active{transform:translateY(1px)}
   .seedbox{margin-left:auto;color:var(--muted);font-size:.8rem;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -188,6 +190,24 @@
   @media (prefers-reduced-motion:no-preference){
     .btn.primary{transition:transform .06s ease}
   }
+  @media print{
+    /* force the light palette regardless of theme, keep hex fills */
+    :root,:root[data-theme="dark"],:root[data-theme="light"]{
+      --bg:#fff; --sea:#eef4f6; --panel:#fff; --panel2:#f4f4f4;
+      --ink:#111; --muted:#444; --line:#bbb;
+      --token:#f6ecd4; --token-ink:#222; --shadow:none;
+      --wood:#3e7a45; --brick:#b5643c; --wheat:#d9a83c; --sheep:#8fbf6a;
+      --ore:#7d8494; --desert:#cdb98a; --gold:#ecc94b; --seahex:#cfe3ee;
+    }
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .toolbar,.gh,#methodCard,footer{display:none!important}
+    header{padding:.2rem 0 0}
+    main{grid-template-columns:1fr;max-width:100%;padding:0;gap:.5rem}
+    .boardwrap{border:1px solid #ccc;padding:.3rem;break-inside:avoid}
+    aside{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem}
+    aside .fair{grid-column:1/-1}
+    .card{break-inside:avoid;padding:.5rem .6rem}
+  }
 </style>
 </head>
 <body>
@@ -220,7 +240,10 @@
   </div>
   <button class="btn primary" id="newBoard">New board</button>
   <button class="btn" id="reroll">Re-draw settlements</button>
+  <button class="btn" id="noPorts" aria-pressed="false"
+    title="Keep starting settlements off ports — pure production starts">No port starts</button>
   <button class="btn" id="copy">Copy link</button>
+  <button class="btn" id="print">Print</button>
   <span class="seedbox">seed <b id="seedLabel"></b></span>
 </div>
 
@@ -594,7 +617,7 @@ function pairEff(p){
   }
   return v;
 }
-function drawSettlements(geom,resArr,num,nPlayers,portMap){
+function drawSettlements(geom,resArr,num,nPlayers,portMap,noPorts){
   const need=nPlayers*2;
   let best=null;
   for(let attempt=0;attempt<60;attempt++){
@@ -605,7 +628,8 @@ function drawSettlements(geom,resArr,num,nPlayers,portMap){
       const redp=inf.chips.filter(([,n])=>n===6||n===8).length*5;
       return {vid:i,pips:inf.pips,res:inf.res,chips:inf.chips,port,redp,
         s:inf.pips+inf.res.size*0.7+portStatic(port)+rnd()*1.4};
-    }).filter(o=>o.pips>=3&&(!geom.mainVertIds||geom.mainVertIds.has(o.vid)))
+    }).filter(o=>o.pips>=3&&(!geom.mainVertIds||geom.mainVertIds.has(o.vid))
+        &&(!noPorts||!o.port))
       .sort((a,b)=>b.s-a.s);
     const blocked=new Set(),picked=[];
     for(const o of scored){
@@ -644,6 +668,8 @@ function drawSettlements(geom,resArr,num,nPlayers,portMap){
     if(!best||worse(candKey(best),candKey(cand))) best=cand;
     if(best.spread<0.6&&best.divmin>=4&&best.redspan<=5)break;
   }
+  // port-free spots can run out on small boards — fall back to allowing ports
+  if(!best&&noPorts)return drawSettlements(geom,resArr,num,nPlayers,portMap,false);
   return best;
 }
 
@@ -832,11 +858,13 @@ function renderPanel(geom,resArr,num,portMap,placement){
       (sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)} pips each ·
       <b>${starter} starts first</b>, then weakest to strongest</small></div>`;
 }
-function renderBoardPanel(isSea){
+function renderBoardPanel(isSea,draftSpread){
   document.getElementById("fairCard").innerHTML=
     `<span class="big">⚓</span><div><span class="pill good">Balanced board</span>
      <small>Fair board and ports. Everyone drafts their own settlements, so no corner is a
-     runaway pick and the placement duel is still yours to play.</small></div>`;
+     runaway pick and the placement duel is still yours to play.${
+       draftSpread!=null?` A solid snake draft on this board lands within
+       <b>±${Math.round(draftSpread*10)/10} pips</b>.`:""}</small></div>`;
   document.getElementById("playerCards").innerHTML=
     `<div class="card"><b>Place your own settlements</b>
      <div class="covers" style="margin-top:.4rem">The board is generated to be fair, then it's
@@ -852,8 +880,30 @@ function renderBoardPanel(isSea){
      </ul></div>`;
 }
 
+/* ---------- board-only helper: what a competent snake draft lands at ---------- */
+function snakeSpread(geom,resArr,num,nPlayers){
+  const legal=i=>!geom.mainVertIds||geom.mainVertIds.has(i);
+  const bl=new Set(); const own=Array.from({length:nPlayers},()=>[]);
+  const order=[...Array(nPlayers).keys()];
+  for(const pl of order.concat(order.slice().reverse())){
+    let best=null;
+    for(let i=0;i<geom.verts.length;i++){
+      if(bl.has(i)||!legal(i))continue;
+      const inf=vertexInfo(geom,resArr,num,i);
+      const nd=new Set([...own[pl].flatMap(s=>[...s.res]),...inf.res]).size;
+      const sc=inf.pips+0.7*nd;
+      if(!best||sc>best.sc)best={i,inf,sc};
+    }
+    if(!best)break;
+    own[pl].push(best.inf); bl.add(best.i);
+    for(const nb of geom.verts[best.i].adj)bl.add(nb);
+  }
+  const sums=own.map(ss=>ss.reduce((t,s)=>t+s.pips,0));
+  return Math.max(...sums)-Math.min(...sums);
+}
+
 /* ---------- orchestration ---------- */
-let state={players:4,mode:"fair",map:"classic",seed:null,board:null,placement:null};
+let state={players:4,mode:"fair",map:"classic",noPorts:false,seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
 function generate(fullBoard){
   if(fullBoard||!state.board){
@@ -874,19 +924,21 @@ function generate(fullBoard){
   const fair=state.mode!=="board";
   document.body.dataset.map=state.map;
   document.getElementById("reroll").style.display=fair?"":"none";
+  document.getElementById("noPorts").style.display=fair?"":"none";
   document.getElementById("methodCard").style.display=fair?"":"none";
   if(fair){
-    state.placement=drawSettlements(geom,resArr,num,state.players,portMap);
+    state.placement=drawSettlements(geom,resArr,num,state.players,portMap,state.noPorts);
     planRoads(geom,resArr,num,state.placement.pairs,portMap);
     render(geom,resArr,num,ports,state.placement,setup);
     renderPanel(geom,resArr,num,portMap,state.placement);
   }else{
     state.placement=null;
     render(geom,resArr,num,ports,null,setup);
-    renderBoardPanel(state.map==="sea");
+    renderBoardPanel(state.map==="sea",snakeSpread(geom,resArr,num,state.players));
   }
   document.getElementById("seedLabel").textContent=state.seed;
-  const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"");
+  const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")
+    +(state.noPorts?"&np=1":"");
   try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
 }
 function readHash(){
@@ -895,6 +947,7 @@ function readHash(){
   if(m.p&&+m.p>=3&&+m.p<=6)state.players=+m.p;
   if(m.m==="board")state.mode="board";
   if(m.map==="sea")state.map="sea";
+  if(m.np==="1")state.noPorts=true;
 }
 document.getElementById("players").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
@@ -908,22 +961,29 @@ document.getElementById("map").addEventListener("click",e=>{
 });
 document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true)};
 document.getElementById("reroll").onclick=()=>generate(false);
+document.getElementById("noPorts").onclick=e=>{
+  state.noPorts=!state.noPorts;
+  e.target.setAttribute("aria-pressed",state.noPorts);
+  generate(false); // same board, re-deal the starting spots
+};
+document.getElementById("print").onclick=()=>window.print();
 document.getElementById("mode").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   document.querySelectorAll("#mode button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   state.mode=b.dataset.mode; generate(false);
 });
 document.getElementById("copy").onclick=async e=>{
-  const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"");
+  const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")
+    +(state.noPorts?"&np=1":"");
   const link=location.href.split("#")[0]+`#s=${state.seed}&p=${state.players}${mp}`;
   try{await navigator.clipboard.writeText(link);e.target.textContent="Copied ✓";}
   catch(_){e.target.textContent=link;}
   setTimeout(()=>e.target.textContent="Copy link",2500);
 };
 /* test hook: drives the exact production pipeline for a given seed/player count/map */
-window.__hm={run(seed,players,map){
+window.__hm={run(seed,players,map,noPorts){
   state.seed=seed; state.players=players; state.mode="fair"; state.map=map==="sea"?"sea":"classic";
-  state.board=null;
+  state.noPorts=!!noPorts; state.board=null;
   generate(true);
   const {geom,resArr,num,ports}=state.board;
   return {
@@ -945,6 +1005,7 @@ document.querySelectorAll("#mode button").forEach(b=>
   b.setAttribute("aria-pressed",b.dataset.mode===state.mode));
 document.querySelectorAll("#map button").forEach(b=>
   b.setAttribute("aria-pressed",b.dataset.map===state.map));
+document.getElementById("noPorts").setAttribute("aria-pressed",state.noPorts);
 generate(true);
 })();
 </script>

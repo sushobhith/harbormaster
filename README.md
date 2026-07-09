@@ -16,7 +16,7 @@ Board, numbers, ports, **and two balanced starting settlements + roads for every
 
 <img src="docs/assets/demo.gif" alt="Clicking New board repeatedly generates fresh, balanced 6-player Catan boards, each with fair per-player starting settlements and a balanced-start readout" width="880">
 
-<sub><i>Every click deals a fresh board and a fair set of starting settlements. The ±0.5 badge is the gap between the best and worst player.</i></sub>
+<sub><i>Every click deals a fresh board and a fair set of starting settlements — base and Seafarers, 3–6 players. The ± badge is the gap between the best and worst player.</i></sub>
 
 </div>
 
@@ -35,8 +35,10 @@ Every online generator will hand you a *board*. Not one of them tells each playe
   main island, small islands, gold fields, both number-token sets, harbors on the official
   scenario edges. Same fairness engine, starting settlements on the main island per the rules.
 - ⚓ **Fixed ports read off a real physical frame**, so the screen matches the wood on your table.
-- ⬡ **Two starting settlements and two roads per player**, matched so nobody starts ahead. Or flip to **Board only** and place your own, if you like the placement duel.
+- ⬡ **Two starting settlements and two roads per player**, matched so nobody starts ahead. Or flip to **Board only** and place your own, if you like the placement duel (it even tells you the pip gap a solid snake draft would land at).
 - 🥇 A suggested turn order that hands first move to the weakest hand.
+- 🚫⚓ **No port starts** toggle for pure production starts.
+- 🖨️ **Print** button with a print-friendly layout for the table.
 - 🔗 A seed in the URL, so you send one link and everyone sees the identical table.
 
 No signup. No app. One HTML file. Works on the phone that is already on the table.
