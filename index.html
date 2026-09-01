@@ -242,6 +242,8 @@
   <button class="btn" id="reroll">Re-draw settlements</button>
   <button class="btn" id="noPorts" aria-pressed="false"
     title="Keep starting settlements off ports — pure production starts">No port starts</button>
+  <button class="btn" id="allRes" aria-pressed="false"
+    title="Give every player all five resources across their two settlements (roads fill any gap)">All 5 resources</button>
   <button class="btn" id="copy">Copy link</button>
   <button class="btn" id="print">Print</button>
   <span class="seedbox">seed <b id="seedLabel"></b></span>
@@ -293,6 +295,10 @@
         <li class="sea-only">Harbors on the official scenario edges, types shuffled ·
           2:1 ports kept off their own resource</li>
         <li>Settlement distance rule respected · 6/8 access evened across players</li>
+        <li><b>All 5 resources</b> (toolbar) re-deals the starts so every player's two
+          settlements cover all five resources — coverage then outranks the pip gap, so
+          watch the ±N. If a board can't seat everyone that way, that player's road is
+          aimed at the resource they're missing.</li>
       </ul>
       <b class="sea-only">Seafarers · Heading for New Shores</b>
       <ul class="sea-only">
@@ -358,12 +364,18 @@ const SETUPS={
   base:{rows:[3,4,5,4,3],
     res:{wood:4,sheep:4,wheat:4,brick:3,ore:3,desert:1},
     tokens:[2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12],
-    // photo-verified port sequence from the physical frame, clockwise from the west edge
-    portSeq:["any","sheep","any","any","brick","wood","any","wheat","ore"]},
+    // photo-verified ports from the physical frame (docs/frames/frame-4player.jpeg),
+    // clockwise from the west edge. portAt = exact perimeter-edge indices (0..29,
+    // sorted by angle, index 0 = first edge clockwise past due west) — measured off the
+    // photo, do NOT re-derive them from an even-spacing formula.
+    portSeq:["ore","any","sheep","any","any","brick","wood","any","wheat"],
+    portAt:[1,4,7,11,14,17,21,24,27]},
   ext:{rows:[3,4,5,6,5,4,3],
     res:{wood:6,sheep:6,wheat:6,brick:5,ore:5,desert:2},
     tokens:[2,2,3,3,3,4,4,4,5,5,5,6,6,6,8,8,8,9,9,9,10,10,10,11,11,11,12,12],
-    portSeq:["any","brick","sheep","wood","any","wheat","any","ore","any","sheep","any"]},
+    // photo-verified from docs/frames/frame-6player.jpeg — see base.portAt note
+    portSeq:["brick","sheep","wood","any","wheat","any","ore","any","sheep","any","any"],
+    portAt:[2,5,8,11,14,16,20,25,28,32,37]},
   sea3:{grid:[
       "....~...",
       "..mmm~~.",
@@ -590,15 +602,30 @@ function placePorts(geom,setup){
     e.mx=(va.x+vb.x)/2; e.my=(va.y+vb.y)/2;
     e.ang=Math.atan2(e.my-cy,e.mx-cx);});
   per.sort((p,q)=>p.ang-q.ang); // clockwise, starting at the west edge
-  const n=portSeq.length;
+  const at=setup.portAt;
   return portSeq.map((ty,i)=>{
-    const e=per[Math.round(i*per.length/n)%per.length];
+    const e=per[at[i]%per.length];
     return {a:e.a,b:e.b,hex:e.hex,mx:e.mx,my:e.my,type:ty};
   });
 }
 const portStatic=ty=>ty==null?0:(ty==="any"?1.0:1.5);
 
 /* ---------- settlement selection & fair pairing ---------- */
+/* shared placement metrics (pure — used by the search loop and the exact all-5 solver) */
+const divOf=p=>new Set([...p[0].res,...p[1].res]).size;
+// basecov = how many of the five base resources a pair actually produces
+// (gold is a wild card in play but is not counted as covering anything here)
+const basecov=p=>{const u=new Set([...p[0].res,...p[1].res]);
+  return BASE_RES.filter(r=>u.has(r)).length;};
+const spreadOf=ps=>Math.max(...ps.map(pairEff))-Math.min(...ps.map(pairEff));
+const divminOf=ps=>Math.min(...ps.map(divOf));
+const covminOf=ps=>Math.min(...ps.map(basecov));
+const redspanOf=ps=>{const r=ps.map(p=>p[0].redp+p[1].redp);
+  return Math.max(...r)-Math.min(...r);};
+const worseKey=(k1,k0)=>{for(let i=0;i<k1.length;i++){
+  if(k1[i]>k0[i]+1e-9)return true; if(k1[i]<k0[i]-1e-9)return false;}
+  return false;};
+
 function vertexInfo(geom,resArr,num,vid){
   const v=geom.verts[vid];let pips=0;const res=new Set(),chips=[];
   for(const hid of v.hexes){const r=resArr[hid];
@@ -617,71 +644,177 @@ function pairEff(p){
   }
   return v;
 }
-function drawSettlements(geom,resArr,num,nPlayers,portMap,noPorts){
+function drawSettlements(geom,resArr,num,nPlayers,portMap,noPorts,allRes){
   const need=nPlayers*2;
   let best=null;
-  for(let attempt=0;attempt<60;attempt++){
-    // greedy pick with jitter, distance rule; ports raise a spot's value
-    const scored=geom.verts.map((v,i)=>{
-      const inf=vertexInfo(geom,resArr,num,i);
-      const port=portMap.get(i)||null;
-      const redp=inf.chips.filter(([,n])=>n===6||n===8).length*5;
-      return {vid:i,pips:inf.pips,res:inf.res,chips:inf.chips,port,redp,
-        s:inf.pips+inf.res.size*0.7+portStatic(port)+rnd()*1.4};
-    }).filter(o=>o.pips>=3&&(!geom.mainVertIds||geom.mainVertIds.has(o.vid))
-        &&(!noPorts||!o.port))
-      .sort((a,b)=>b.s-a.s);
-    const blocked=new Set(),picked=[];
-    for(const o of scored){
-      if(blocked.has(o.vid))continue;
-      picked.push(o); blocked.add(o.vid);
-      for(const nb of geom.verts[o.vid].adj) blocked.add(nb);
-      if(picked.length===need)break;
-    }
-    if(picked.length<need)continue;
-    // fair pairing: strongest with weakest, by effective value
-    picked.sort((a,b)=>(b.pips+portStatic(b.port))-(a.pips+portStatic(a.port)));
-    const pairs=[];
-    for(let i=0;i<nPlayers;i++) pairs.push([picked[i],picked[need-1-i]]);
-    // local swaps: shrink value spread, keep diversity, even out 6/8 exposure
-    const div=p=>new Set([...p[0].res,...p[1].res]).size;
-    const spread=ps=>Math.max(...ps.map(pairEff))-Math.min(...ps.map(pairEff));
-    const divmin=ps=>Math.min(...ps.map(div));
-    const redspan=ps=>{const r=ps.map(p=>p[0].redp+p[1].redp);
-      return Math.max(...r)-Math.min(...r);};
-    const key=ps=>[spread(ps),-divmin(ps),redspan(ps)];
-    const worse=(k1,k0)=>{for(let i=0;i<k1.length;i++){
-      if(k1[i]>k0[i]+1e-9)return true; if(k1[i]<k0[i]-1e-9)return false;}
-      return false;};
-    for(let it=0;it<600;it++){
-      const a=Math.floor(rnd()*nPlayers),b=Math.floor(rnd()*nPlayers);
-      if(a===b)continue;
-      const ia=Math.floor(rnd()*2),ib=Math.floor(rnd()*2);
-      const k0=key(pairs);
-      [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
-      if(worse(key(pairs),k0))
+  // allRes: chase full five-resource coverage first — weight diversity in the greedy
+  // score, open the candidate pool up, and search longer. Phase 2 only runs on the rare
+  // board where phase 1 leaves someone short; it opens the weakest (1-pip) corners too.
+  for(let phase=0;phase<(allRes?2:1);phase++){
+    const minPips=allRes?(phase?1:2):3;
+    for(let attempt=0;attempt<(allRes?220:60);attempt++){
+      // greedy pick with jitter, distance rule; ports raise a spot's value
+      const scored=geom.verts.map((v,i)=>{
+        const inf=vertexInfo(geom,resArr,num,i);
+        const port=portMap.get(i)||null;
+        const redp=inf.chips.filter(([,n])=>n===6||n===8).length*5;
+        return {vid:i,pips:inf.pips,res:inf.res,chips:inf.chips,port,redp,
+          s:inf.pips+inf.res.size*(allRes?2.2+(attempt%5)*1.2:0.7)+portStatic(port)+rnd()*1.4};
+      }).filter(o=>o.pips>=minPips&&(!geom.mainVertIds||geom.mainVertIds.has(o.vid))
+          &&(!noPorts||!o.port))
+        .sort((a,b)=>b.s-a.s);
+      const blocked=new Set(),pool=[];
+      for(const o of scored){
+        if(blocked.has(o.vid))continue;
+        pool.push(o); blocked.add(o.vid);
+        for(const nb of geom.verts[o.vid].adj) blocked.add(nb);
+        if(!allRes&&pool.length===need)break; // allRes keeps the rest as a swap reserve
+      }
+      if(pool.length<need)continue;
+      // the pool is an independent set under the distance rule, so any member can stand
+      // in for any other — that is what makes the reserve swaps below legal
+      const picked=pool.slice(0,need),reserve=pool.slice(need);
+      // fair pairing: strongest with weakest, by effective value
+      picked.sort((a,b)=>(b.pips+portStatic(b.port))-(a.pips+portStatic(a.port)));
+      const pairs=[];
+      for(let i=0;i<nPlayers;i++) pairs.push([picked[i],picked[need-1-i]]);
+      // local swaps: shrink value spread, keep diversity, even out 6/8 exposure
+      const key=ps=>allRes?[-covminOf(ps),spreadOf(ps),redspanOf(ps)]
+                          :[spreadOf(ps),-divminOf(ps),redspanOf(ps)];
+      const worse=worseKey;
+      for(let it=0;it<600;it++){
+        const a=Math.floor(rnd()*nPlayers),b=Math.floor(rnd()*nPlayers);
+        if(a===b)continue;
+        const ia=Math.floor(rnd()*2),ib=Math.floor(rnd()*2);
+        const k0=key(pairs);
         [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+        if(worse(key(pairs),k0))
+          [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+      }
+      if(allRes){
+        // exhaustive repair sweeps — no rnd(), so replays stay deterministic.
+        // (a) swap two players' spots, (b) trade a spot for an unused pool vertex.
+        for(let round=0;round<8;round++){
+          let moved=false;
+          for(let a=0;a<nPlayers;a++)for(let b=a+1;b<nPlayers;b++)
+            for(let ia=0;ia<2;ia++)for(let ib=0;ib<2;ib++){
+              const k0=key(pairs);
+              [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+              const k1=key(pairs);
+              if(worse(k1,k0))[pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+              else if(worse(k0,k1))moved=true;
+            }
+          for(let a=0;a<nPlayers;a++)for(let ia=0;ia<2;ia++)
+            for(let k=0;k<reserve.length;k++){
+              const k0=key(pairs),cur=pairs[a][ia];
+              pairs[a][ia]=reserve[k];
+              const k1=key(pairs);
+              if(worse(k1,k0))pairs[a][ia]=cur;
+              else{reserve[k]=cur; if(worse(k0,k1))moved=true;}
+            }
+          if(!moved)break;
+        }
+      }
+      const cand={pairs,spread:spreadOf(pairs),divmin:divminOf(pairs),covmin:covminOf(pairs),
+        redspan:redspanOf(pairs),total:pairs.reduce((t,p)=>t+pairEff(p),0)};
+      const candKey=c=>allRes?[-c.covmin,c.spread,c.redspan,-c.total]
+                             :[c.spread,-c.divmin,c.redspan,-c.total];
+      if(!best||worse(candKey(best),candKey(cand))) best=cand;
+      if(allRes?(best.covmin>=5&&best.spread<=1)
+               :(best.spread<0.6&&best.divmin>=4&&best.redspan<=5))break;
     }
-    const cand={pairs,spread:spread(pairs),divmin:divmin(pairs),
-      redspan:redspan(pairs),total:pairs.reduce((t,p)=>t+pairEff(p),0)};
-    const candKey=c=>[c.spread,-c.divmin,c.redspan,-c.total];
-    if(!best||worse(candKey(best),candKey(cand))) best=cand;
-    if(best.spread<0.6&&best.divmin>=4&&best.redspan<=5)break;
+    if(!allRes||(best&&best.covmin>=5))break;
+  }
+  // Heuristic came up short: prove it. Exact backtracking over every legal pair that
+  // already covers all five, looking for nPlayers of them that respect the distance rule.
+  // Only runs on the ~2% of boards the search above can't crack, so the cost is rare.
+  if(allRes&&best&&best.covmin<5){
+    const exact=solveAllRes(geom,resArr,num,nPlayers,portMap,noPorts);
+    if(exact)best=exact;
   }
   // port-free spots can run out on small boards — fall back to allowing ports
-  if(!best&&noPorts)return drawSettlements(geom,resArr,num,nPlayers,portMap,false);
+  if(!best&&noPorts)return drawSettlements(geom,resArr,num,nPlayers,portMap,false,allRes);
+  return best;
+}
+/* Exact all-5 solver. Enumerates the "good pairs" (two legal, non-adjacent spots that
+   together produce all five base resources), then backtracks for nPlayers mutually
+   compatible ones. Collects up to KEEP solutions and returns the best-balanced, so the
+   guarantee doesn't cost more fairness than it has to. Step-budgeted: a board with no
+   solution bails instead of hanging, and the caller keeps the heuristic's best. */
+function solveAllRes(geom,resArr,num,nPlayers,portMap,noPorts){
+  const spots=[];
+  for(let i=0;i<geom.verts.length;i++){
+    if(geom.mainVertIds&&!geom.mainVertIds.has(i))continue;
+    const inf=vertexInfo(geom,resArr,num,i);
+    if(inf.pips<1)continue;
+    const port=portMap.get(i)||null;
+    if(noPorts&&port)continue;
+    spots.push({vid:i,pips:inf.pips,res:inf.res,chips:inf.chips,port,
+      redp:inf.chips.filter(([,n])=>n===6||n===8).length*5});
+  }
+  const good=[];
+  for(let i=0;i<spots.length;i++)for(let j=i+1;j<spots.length;j++){
+    if(geom.verts[spots[i].vid].adj.has(spots[j].vid))continue;
+    const pr=[spots[i],spots[j]];
+    if(basecov(pr)===5)good.push(pr);
+  }
+  if(good.length<nPlayers)return null;
+  // strongest pairs first: a solution found early is usually a decent one too
+  good.sort((a,b)=>pairEff(b)-pairEff(a));
+  const near=pr=>{const s=new Set();
+    for(const sp of pr){s.add(sp.vid);for(const nb of geom.verts[sp.vid].adj)s.add(nb);}
+    return s;};
+  const zone=good.map(near);
+  const fits=(k,chosen)=>chosen.every(c=>
+    !zone[c].has(good[k][0].vid)&&!zone[c].has(good[k][1].vid));
+  const KEEP=60; let budget=600000, found=[];
+  (function walk(start,chosen){
+    if(found.length>=KEEP||budget<=0)return;
+    if(chosen.length===nPlayers){found.push(chosen.map(k=>good[k]));return;}
+    for(let k=start;k<good.length;k++){
+      if(budget--<=0)return;
+      if(good.length-k<nPlayers-chosen.length)return;
+      if(!fits(k,chosen))continue;
+      chosen.push(k); walk(k+1,chosen); chosen.pop();
+      if(found.length>=KEEP||budget<=0)return;
+    }
+  })(0,[]);
+  if(!found.length)return null;
+  // Each solution is feasible but greedily ordered, so re-shuffle who gets which spot:
+  // coverage stays first in the key, so this can only shrink the pip gap, never break the 5.
+  const key=ps=>[-covminOf(ps),spreadOf(ps),redspanOf(ps)];
+  let best=null;
+  for(const sol of found){
+    const pairs=sol.map(pr=>[pr[0],pr[1]]);
+    for(let round=0;round<8;round++){
+      let moved=false;
+      for(let a=0;a<nPlayers;a++)for(let b=a+1;b<nPlayers;b++)
+        for(let ia=0;ia<2;ia++)for(let ib=0;ib<2;ib++){
+          const k0=key(pairs);
+          [pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+          const k1=key(pairs);
+          if(worseKey(k1,k0))[pairs[a][ia],pairs[b][ib]]=[pairs[b][ib],pairs[a][ia]];
+          else if(worseKey(k0,k1))moved=true;
+        }
+      if(!moved)break;
+    }
+    const cand={pairs,spread:spreadOf(pairs),divmin:divminOf(pairs),covmin:covminOf(pairs),
+      redspan:redspanOf(pairs),total:pairs.reduce((t,p)=>t+pairEff(p),0)};
+    const k=c=>[c.spread,c.redspan,-c.total];
+    if(!best||worseKey(k(best),k(cand)))best=cand;
+  }
   return best;
 }
 
 /* ---------- starting roads: point at best unclaimed expansion spot ---------- */
-function planRoads(geom,resArr,num,pairs,portMap){
+function planRoads(geom,resArr,num,pairs,portMap,allRes){
   const blocked=new Set();
   for(const p of pairs)for(const s of p){blocked.add(s.vid);
     for(const nb of geom.verts[s.vid].adj)blocked.add(nb);}
   const sums=pairs.map(p=>p[0].pips+p[1].pips);
   const order=pairs.map((_,i)=>i).sort((a,b)=>sums[a]-sums[b]);
   const claimed=new Set();
-  const findTarget=(spot,ignoreClaims)=>{
+  const findTarget=(spot,ignoreClaims,missing)=>{
     let best=null;
     for(const v2 of geom.verts[spot.vid].adj){
       if(geom.mainVertIds&&!geom.mainVertIds.has(v2))continue; // roads stay on the main island
@@ -691,7 +824,8 @@ function planRoads(geom,resArr,num,pairs,portMap){
         if(!ignoreClaims&&claimed.has(v3))continue;
         const inf=vertexInfo(geom,resArr,num,v3);
         if(inf.pips<1)continue;
-        const val=inf.pips+inf.res.size*0.7+portStatic(portMap.get(v3)||null);
+        const val=inf.pips+inf.res.size*0.7+portStatic(portMap.get(v3)||null)
+          +(missing?[...inf.res].filter(r=>missing.has(r)).length*4:0);
         if(!best||val>best.val)
           best={to:v2,target:v3,val,pips:inf.pips,chips:inf.chips};
       }
@@ -699,13 +833,17 @@ function planRoads(geom,resArr,num,pairs,portMap){
     return best;
   };
   for(const pi of order){
+    // allRes: if the two settlements miss a resource, aim a road at it
+    const missing=allRes?new Set(BASE_RES.filter(r=>
+      !pairs[pi][0].res.has(r)&&!pairs[pi][1].res.has(r))):null;
     for(const spot of pairs[pi]){
-      let best=findTarget(spot,false);      // prefer a spot nobody else aims at
+      let best=findTarget(spot,false,missing); // prefer a spot nobody else aims at
       if(best)claimed.add(best.target);
-      else best=findTarget(spot,true)       // contested spot beats no spot
+      else best=findTarget(spot,true,missing)  // contested spot beats no spot
         ||{to:[...geom.verts[spot.vid].adj].find(v=>!geom.mainVertIds||geom.mainVertIds.has(v))
              ??[...geom.verts[spot.vid].adj][0],target:null,val:0,pips:0,chips:[]};
       spot.road=best;
+      if(missing)for(const[r]of best.chips)missing.delete(r); // second road chases what's left
     }
   }
 }
@@ -820,7 +958,10 @@ function renderPanel(geom,resArr,num,portMap,placement){
   placement.pairs.forEach((pair,pi)=>{
     const[name,color]=PLAYERCOLORS[pi];
     const covered=new Set([...pair[0].res,...pair[1].res]);
+    const viaRoad=new Set(pair.flatMap(sp=>sp.road?sp.road.chips.map(c=>c[0]):[]));
     const missing=BASE_RES.filter(r=>!covered.has(r));
+    const roadFills=missing.filter(r=>viaRoad.has(r));
+    const stillMissing=missing.filter(r=>!viaRoad.has(r));
     const card=document.createElement("div");card.className="card player";
     const chipsOf=list=>list.map(([r,n])=>
       `<span class="chip"><span class="dot" style="background:${RES[r]}"></span>${n}</span>`).join("");
@@ -843,8 +984,9 @@ function renderPanel(geom,resArr,num,portMap,placement){
           portBonus>0?` <small>+${portBonus.toFixed(1)} port</small>`:""}</span></div>
       <div class="bar"><i style="width:${effs[pi]/maxEff*100}%;background:${color}"></i></div>
       <div class="spots">${spotHTML(pair[0])}${spotHTML(pair[1])}</div>
-      <div class="covers">Covers <b>${covered.size}/5</b> resources${
-        missing.length?` · missing ${missing.map(m=>RESNAME[m]).join(", ")}`:""}
+      <div class="covers">Covers <b>${BASE_RES.filter(r=>covered.has(r)).length}/5</b> resources${
+        roadFills.length?` · ${roadFills.map(m=>RESNAME[m]).join(", ")} via road`:""}${
+        stillMissing.length?` · missing ${stillMissing.map(m=>RESNAME[m]).join(", ")}`:""}
         · takes turn <b>${turn}</b>${turn===1?" — starts first":""}</div>`;
     cards.appendChild(card);
   });
@@ -852,8 +994,11 @@ function renderPanel(geom,resArr,num,portMap,placement){
   const spread=Math.round(placement.spread*10)/10;
   const ok=spread<=2;
   const starter=PLAYERCOLORS[order[0]][0];
+  const cov5=placement.covmin!=null&&placement.covmin>=5;
   fc.innerHTML=`<span class="big">±${spread}</span>
-    <div><span class="pill ${ok?"good":"warn"}">${ok?"Balanced start":"Uneven — re-draw"}</span>
+    <div><span class="pill ${ok?"good":"warn"}">${ok?"Balanced start":"Uneven — re-draw"}</span>${
+      state.allRes?` <span class="pill ${cov5?"good":"warn"}">${cov5
+        ?"All 5 resources each":"Best possible — roads fill the gaps"}</span>`:""}
     <small>start-value gap (pips + port worth), best vs worst · avg ${
       (sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)} pips each ·
       <b>${starter} starts first</b>, then weakest to strongest</small></div>`;
@@ -903,7 +1048,8 @@ function snakeSpread(geom,resArr,num,nPlayers){
 }
 
 /* ---------- orchestration ---------- */
-let state={players:4,mode:"fair",map:"classic",noPorts:false,seed:null,board:null,placement:null};
+let state={players:4,mode:"fair",map:"classic",noPorts:false,allRes:false,
+  seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
 function generate(fullBoard){
   if(fullBoard||!state.board){
@@ -925,10 +1071,12 @@ function generate(fullBoard){
   document.body.dataset.map=state.map;
   document.getElementById("reroll").style.display=fair?"":"none";
   document.getElementById("noPorts").style.display=fair?"":"none";
+  document.getElementById("allRes").style.display=fair?"":"none";
   document.getElementById("methodCard").style.display=fair?"":"none";
   if(fair){
-    state.placement=drawSettlements(geom,resArr,num,state.players,portMap,state.noPorts);
-    planRoads(geom,resArr,num,state.placement.pairs,portMap);
+    state.placement=drawSettlements(geom,resArr,num,state.players,portMap,
+      state.noPorts,state.allRes);
+    planRoads(geom,resArr,num,state.placement.pairs,portMap,state.allRes);
     render(geom,resArr,num,ports,state.placement,setup);
     renderPanel(geom,resArr,num,portMap,state.placement);
   }else{
@@ -938,7 +1086,7 @@ function generate(fullBoard){
   }
   document.getElementById("seedLabel").textContent=state.seed;
   const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")
-    +(state.noPorts?"&np=1":"");
+    +(state.noPorts?"&np=1":"")+(state.allRes?"&a5=1":"");
   try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
 }
 function readHash(){
@@ -948,6 +1096,7 @@ function readHash(){
   if(m.m==="board")state.mode="board";
   if(m.map==="sea")state.map="sea";
   if(m.np==="1")state.noPorts=true;
+  if(m.a5==="1")state.allRes=true;
 }
 document.getElementById("players").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
@@ -966,6 +1115,11 @@ document.getElementById("noPorts").onclick=e=>{
   e.target.setAttribute("aria-pressed",state.noPorts);
   generate(false); // same board, re-deal the starting spots
 };
+document.getElementById("allRes").onclick=e=>{
+  state.allRes=!state.allRes;
+  e.target.setAttribute("aria-pressed",state.allRes);
+  generate(false); // same board, re-deal so everyone lands all five resources
+};
 document.getElementById("print").onclick=()=>window.print();
 document.getElementById("mode").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
@@ -981,9 +1135,9 @@ document.getElementById("copy").onclick=async e=>{
   setTimeout(()=>e.target.textContent="Copy link",2500);
 };
 /* test hook: drives the exact production pipeline for a given seed/player count/map */
-window.__hm={run(seed,players,map,noPorts){
+window.__hm={run(seed,players,map,noPorts,allRes){
   state.seed=seed; state.players=players; state.mode="fair"; state.map=map==="sea"?"sea":"classic";
-  state.noPorts=!!noPorts; state.board=null;
+  state.noPorts=!!noPorts; state.allRes=!!allRes; state.board=null;
   generate(true);
   const {geom,resArr,num,ports}=state.board;
   return {
@@ -1006,6 +1160,7 @@ document.querySelectorAll("#mode button").forEach(b=>
 document.querySelectorAll("#map button").forEach(b=>
   b.setAttribute("aria-pressed",b.dataset.map===state.map));
 document.getElementById("noPorts").setAttribute("aria-pressed",state.noPorts);
+document.getElementById("allRes").setAttribute("aria-pressed",state.allRes);
 generate(true);
 })();
 </script>

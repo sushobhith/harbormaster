@@ -141,6 +141,50 @@ await page.click('#mode button[data-mode="board"]');
 check('noPorts: hidden in board mode', await page.evaluate(() =>
   document.getElementById('noPorts').style.display === 'none'));
 
+// --- 8b. all-5-resources toggle ---
+await load('#s=a5test&p=4');
+const before5 = await snap();
+await page.click('#allRes');
+s = await snap();
+check('allRes: hash gains a5=1', s.hash.includes('a5=1'), s.hash);
+check('allRes: board unchanged, placement re-dealt', hexSig(s.board) === hexSig(before5.board));
+check('allRes: pill shown on the fair card', await page.evaluate(() =>
+  /All 5 resources each|roads fill the gaps/.test(document.getElementById('fairCard').textContent)));
+const cov = await page.evaluate(() => {
+  const BASE = ['wood', 'brick', 'wheat', 'sheep', 'ore'];
+  const out = [];
+  for (const [seed, n, map] of [['a5test', 4, 'classic'], ['a5test', 6, 'classic'], ['a5test', 5, 'sea']]) {
+    const d = window.__hm.run(seed, n, map, false, true);
+    const vids = d.pairs.flat().map(sp => sp.vid);
+    const legal = vids.every((v, i) => vids.every((w, j) =>
+      i === j || (v !== w && !d.verts[v].adj.includes(w))));
+    const resAt = v => d.verts[v].hexes.map(h => d.hexes[h])
+      .filter(h => h.num != null).map(h => h.res);
+    const per = d.pairs.map(pr => {
+      const u = new Set(pr.flatMap(sp => resAt(sp.vid)));
+      const viaRoad = new Set(pr.flatMap(sp =>
+        sp.road && sp.road.target != null ? resAt(sp.road.target) : []));
+      return { cov: BASE.filter(r => u.has(r)).length,
+               withRoads: BASE.filter(r => u.has(r) || viaRoad.has(r)).length };
+    });
+    out.push({ min: Math.min(...per.map(x => x.cov)),
+               minWithRoads: Math.min(...per.map(x => x.withRoads)), legal });
+  }
+  return out;
+});
+// contract: all five from the two settlements, or the road points at what's missing
+check('allRes: every player reaches all 5 resources', cov.every(c => c.minWithRoads === 5),
+  JSON.stringify(cov));
+check('allRes: settlements alone cover 5 on most boards', cov.filter(c => c.min === 5).length >= 2,
+  JSON.stringify(cov));
+check('allRes: distance rule still respected', cov.every(c => c.legal));
+await load('#s=a5test&p=4&a5=1');
+check('allRes: hash restore presses button', await page.evaluate(() =>
+  document.getElementById('allRes').getAttribute('aria-pressed') === 'true'));
+await page.click('#mode button[data-mode="board"]');
+check('allRes: hidden in board mode', await page.evaluate(() =>
+  document.getElementById('allRes').style.display === 'none'));
+
 // --- 9. board-only shows the snake-draft stat; print button + print CSS ---
 await load('#s=abc&p=4&m=board');
 check('board mode: snake-draft stat shown', await page.evaluate(() =>
