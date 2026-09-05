@@ -24,6 +24,7 @@
     "test": "test"
   },
   "scripts": {
+    "test:history": "node test/test_history.mjs",
     "test": "node test/test_balance.mjs \"$PWD\" 100 && node test/test_page.mjs \"$PWD\"",
     "test:quick": "node test/test_balance.mjs \"$PWD\" 20"
   },
