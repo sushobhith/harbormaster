@@ -24,7 +24,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "node test/test_balance.mjs \"$PWD\" 100 && node test/test_page.mjs \"$PWD\"",
+    "test": "node test/test_balance.mjs \"$PWD\" 100 && node test/test_page.mjs \"$PWD\" && node test/test_version.mjs \"$PWD\"",
     "test:quick": "node test/test_balance.mjs \"$PWD\" 20"
   },
   "devDependencies": {
