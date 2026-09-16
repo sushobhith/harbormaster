@@ -905,7 +905,7 @@ function snakeSpread(geom,resArr,num,nPlayers){
 /* ---------- orchestration ---------- */
 let state={players:4,mode:"fair",map:"classic",noPorts:false,seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
-function generate(fullBoard){
+function generate(fullBoard,push){
   if(fullBoard||!state.board){
     // classic seeds keep their pre-Seafarers namespace so old shared links reproduce
     rnd=mulberry32(xmur3(state.seed+"|"+state.players+(state.map==="sea"?"|sea":""))());
@@ -939,7 +939,7 @@ function generate(fullBoard){
   document.getElementById("seedLabel").textContent=state.seed;
   const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")
     +(state.noPorts?"&np=1":"");
-  try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
+  try{(push?history.pushState:history.replaceState).call(history,null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
 }
 function readHash(){
   const m=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
@@ -959,7 +959,7 @@ document.getElementById("map").addEventListener("click",e=>{
   document.querySelectorAll("#map button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   state.map=b.dataset.map; state.board=null; generate(true);
 });
-document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true)};
+document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true,true)};
 document.getElementById("reroll").onclick=()=>generate(false);
 document.getElementById("noPorts").onclick=e=>{
   state.noPorts=!state.noPorts;
@@ -971,6 +971,18 @@ document.getElementById("mode").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   document.querySelectorAll("#mode button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   state.mode=b.dataset.mode; generate(false);
+});
+window.addEventListener("popstate",()=>{
+  readHash();
+  document.querySelectorAll("#players button").forEach(b=>
+    b.setAttribute("aria-pressed",+b.dataset.n===state.players));
+  document.querySelectorAll("#mode button").forEach(b=>
+    b.setAttribute("aria-pressed",b.dataset.mode===state.mode));
+  document.querySelectorAll("#map button").forEach(b=>
+    b.setAttribute("aria-pressed",b.dataset.map===state.map));
+  document.getElementById("noPorts").setAttribute("aria-pressed",state.noPorts);
+  state.board=null;
+  generate(true,false);
 });
 document.getElementById("copy").onclick=async e=>{
   const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")

@@ -162,6 +162,52 @@ const overflow = await mob.evaluate(() => document.documentElement.scrollWidth -
 check('mobile 390px: no horizontal overflow', overflow <= 0, `overflow ${overflow}px`);
 await mob.close();
 
+// --- 11. browser history: pushState / popstate / replaceState ---
+// 11a. New board pushes history entries; other controls do not
+await load('#s=hist1&p=4');
+const histStart = await page.evaluate(() => history.length);
+await page.click('#newBoard');
+await page.click('#newBoard');
+const histAfter2 = await page.evaluate(() => history.length);
+check('history: newBoard x2 pushes 2 entries', histAfter2 === histStart + 2, `${histStart} → ${histAfter2}`);
+
+// 11b. Reroll does NOT push history entries
+await load('#s=hist2&p=4');
+const histBeforeReroll = await page.evaluate(() => history.length);
+for (let i = 0; i < 5; i++) await page.click('#reroll');
+const histAfterReroll = await page.evaluate(() => history.length);
+check('history: reroll x5 does not push entries', histAfterReroll === histBeforeReroll, `${histBeforeReroll} → ${histAfterReroll}`);
+
+// 11c. Player-count toggle does NOT push history entries
+await load('#s=hist3&p=4');
+const histBeforePlayer = await page.evaluate(() => history.length);
+await page.click('#players button[data-n="6"]');
+const histAfterPlayer = await page.evaluate(() => history.length);
+check('history: player toggle does not push entries', histAfterPlayer === histBeforePlayer, `${histBeforePlayer} → ${histAfterPlayer}`);
+
+// 11d. popstate restores previous board (Back after New board)
+await load('#s=popbase&p=4');
+const snapBefore = await snap();
+await page.click('#newBoard');
+const snapNew = await snap();
+check('history: newBoard changed seed', snapNew.seed !== snapBefore.seed);
+// Navigate back via JS (fires popstate)
+await page.evaluate(() => history.back());
+await page.waitForFunction(
+  (oldSeed) => document.getElementById('seedLabel').textContent === oldSeed,
+  snapBefore.seed
+);
+const snapBack = await snap();
+check('history: popstate restores seed', snapBack.seed === snapBefore.seed, `expected ${snapBefore.seed}, got ${snapBack.seed}`);
+check('history: popstate restores board', snapBack.board === snapBefore.board);
+
+// 11e. window.__hm.run does not push history entries
+await load('#s=hmrun&p=4');
+const histBeforeHook = await page.evaluate(() => history.length);
+await page.evaluate(() => window.__hm.run('anyseed', 4, 'classic', false));
+const histAfterHook = await page.evaluate(() => history.length);
+check('history: __hm.run does not push entries', histAfterHook === histBeforeHook, `${histBeforeHook} → ${histAfterHook}`);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await browser.close();
 process.exit(fail ? 1 : 0);
