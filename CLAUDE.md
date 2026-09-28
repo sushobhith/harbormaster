@@ -82,18 +82,35 @@ One `<script>` IIFE, sections in order:
 
 ## Ports — photo-verified, DO NOT re-randomize
 
-The user's physical frames have ports printed at fixed spots. Read from photos in
-`docs/frames/` (July 2026). Encoded in `SETUPS.*.portSeq`, clockwise starting at the
-**west (left) edge** (perimeter edges sorted by `atan2` angle ascending = clockwise from west):
+The user's physical frames have ports printed at fixed spots. Read from the photos in
+`docs/frames/`. Encoded in `SETUPS.*.portSeq` (types) + `SETUPS.*.portAt` (exact perimeter
+edge indices), clockwise starting past the **west (left) edge** (perimeter edges sorted by
+`atan2` angle ascending = clockwise from west; index 0 is the first edge past due west):
 
-- 4-player: `any, sheep, any, any, brick, wood, any, wheat, ore`
-- 6-player: `any, brick, sheep, wood, any, wheat, any, ore, any, sheep, any`
+- 4-player (30 perimeter edges): `ore, any, sheep, any, any, brick, wood, any, wheat`
+  at edges `1, 4, 7, 11, 14, 17, 21, 24, 27`
+- 6-player (38 edges): `brick, sheep, wood, any, wheat, any, ore, any, sheep, any, any`
+  at edges `2, 5, 8, 11, 14, 16, 20, 25, 28, 32, 37`
 
-Positions: perimeter edge index `round(i * perimeterLen / nPorts)` — 30 edges/9 ports (base),
-38 edges/11 ports (ext). Known caveats: positions may be ±1 edge vs the physical frame
-(measured from angled photos); 2:1 icons were read from low-res crops — brick/wheat/sheep-pair
-are high confidence, wood-vs-sheep on adjacent tokens was resolved by inventory. If the user
-reports a mismatch, fix the single entry in `portSeq`.
+**Re-measured 2026-09-01** after the user reported the 4-player layout didn't match their
+frame (a 3:1 sat on the row-2 left hex instead of the row-1 left hex). The old code placed
+ports at `round(i * perimeterLen / nPorts)`, which is off by an edge in most slots and puts
+the lone port of a 1-port frame panel off-centre. Both frames were re-derived photogrammetrically:
+segment the frame photo (blue sea → hole → minus coast sand) to get the land polygon, fit a
+homography from the model 30-/38-gon to it, then read each port off its two dock planks, which
+point at the two vertices of its edge. Every port on both frames was confirmed that way.
+
+The base result is the real Catan frame rule and has exact 3-fold symmetry: seams every 5
+edges (at perimeter vertices 4, 9, 14, 19, 24, 29), panels alternate **2 ports at panel
+positions 0 and 3** / **1 port dead centre**. The type sequence is the same cyclic order as
+before — the fix re-anchors it by one slot, so the pairings the user recognises (sheep next
+to a 3:1 on one panel) are preserved.
+
+Caveats: the 2:1 icons come from low-res crops of the 4-player photo. Brick is confirmed
+directly on both frames, and the 3:1-vs-2:1 pattern pins the whole sequence's alignment
+(it only matches at one rotation), so the types are on solid ground; a single icon could
+still be mislabelled. If the user reports a mismatch, fix the one entry in `portSeq` — do
+not touch `portAt`, and never re-derive positions from an even-spacing formula.
 
 ## Seafarers — "Heading for New Shores" (added 2026-07-09)
 
@@ -127,9 +144,18 @@ node test/test_page.mjs "$PWD"               # render/theme/constraint smoke tes
 ```
 
 `test_golden.mjs` compares classic `__hm.run` output hashes against
-`test/golden_classic.json` (captured 2026-07-09 pre-Seafarers). ANY classic diff = regression:
-it breaks every shared link and the photo-verified port frames. Re-capture the baseline only
-if a classic-visible change is intentional and announced.
+`test/golden_classic.json` (**re-captured 2026-09-01** with the corrected `portAt` port
+positions; the 2026-07-09 baseline is void — moving a port re-rolls resources, numbers and
+settlements, so every classic seed changed and old shared links draw a different board). ANY
+further classic diff = regression. Re-capture the baseline only if a classic-visible change is
+intentional and announced.
+
+`__hm.run(seed, players, map, noPorts, allRes)` — the last two args drive the toolbar
+toggles. `test_ui.mjs` §8b covers the All-5 toggle (hash, pill, 5/5 coverage, distance rule);
+`test_balance.mjs` still runs with both toggles off, so after touching `drawSettlements`
+also re-check All-5 by hand (verified 2026-09-01 over 30 seeds × 3/4/5/6p × classic/sea:
+distance rule, no duplicate vertices, legal roads, determinism, sea main-island rule and
+No-port-starts combined — all clean).
 
 `test_balance.mjs` runs N seeds × {3,4,5,6} players through `__hm.run` and checks:
 - **Invariants (must be 0):** adjacent 6/8, adjacent twins, 2-next-12, same-resource
@@ -138,7 +164,10 @@ if a classic-visible change is intentional and announced.
   coverage (min ≥3 always), vs greedy-snake-draft baseline.
 - Determinism (same seed twice ⇒ identical) and zero page errors.
 
-Baseline results (2026-07-06, 400 setups): all invariants 0; value gap ≤2 in 99–100%.
+Baseline results (2026-09-01, 300 seeds × 3/4/5/6p classic, post port fix): all hard
+invariants 0; value gap ≤1 in 93–98%, ≤2 in 99–100%; coverage min ≥3 in 100%. Road-target
+contention (`roadMissing`/`dupTargets`, not invariants) rose ~15-25% vs the old port layout —
+different port corners, same generator. Sea maps are byte-identical (they use `portEdges`).
 Seafarers baseline (2026-07-09, 100 seeds × 3/4/5/6p): all invariants 0 (incl. seaToken,
 badStart, badTarget, badScenario); value gap ≤1 in 93–98%, ≤2 in 100%; 17–53ms/setup.
 
@@ -164,6 +193,28 @@ submission, Bing import, Reddit/BGG backlinks.
   settlement candidates in `drawSettlements` (6th arg). Falls back to allowing ports if a
   board can't seat everyone port-free. Filter runs after scoring, so RNG draws are unchanged
   and golden stays intact with the toggle off.
+- **All 5 resources** (`#allRes`, hash `&a5=1`, fair mode only, added 2026-09-01): re-deals
+  the starts so **every** player's two settlements produce all five base resources. Passed as
+  the 7th arg of `drawSettlements` + 6th of `planRoads`. Three layers:
+  1. *Search* — diversity weighted into the greedy score (weight cycles 2.2→7.0 across
+     attempts), the whole independent set kept as a **swap reserve** instead of stopping at
+     2N picks, objective key flipped to `[-covmin, spread, redspan]`, and deterministic
+     1-swap repair sweeps (pair↔pair and pair↔reserve, no `rnd()`, so replays are stable).
+     A 2nd phase with a 1-pip floor runs only if phase 1 leaves someone short. ~98% of
+     players land 5/5 here.
+  2. *`solveAllRes` (exact)* — runs only when the search still falls short. Enumerates every
+     legal non-adjacent pair that already covers all five, backtracks for nPlayers mutually
+     compatible ones (step-budgeted: 600k, keeps up to 60 solutions), then re-balances each
+     solution with the same coverage-first repair and returns the best. This is what makes
+     the toggle a guarantee rather than a best-effort; if it finds nothing, the board really
+     can't seat everyone and the heuristic's best stands.
+  3. *`planRoads`* — a player who still lacks something gets their road aimed at it
+     (`missing` set, +4 per missing resource in the target score, shrunk as roads are fixed);
+     the card then reads "Wheat via road".
+  Measured 2026-09-01 (60 seeds × 3/4/5/6p × classic/sea): **100% of players at 5/5**,
+  24–161ms/setup average, worst single setup 954ms (6p classic). Coverage outranks the pip
+  gap while on, so `spread ≤2` drops to ~88–100% of setups (max seen 6, on the small sea-3p
+  map) — that trade is the point of the toggle, and the ±N pill still shows it honestly.
 - **Print** (`#print`): `window.print()` + `@media print` block at the end of the stylesheet —
   forces the light palette (overrides both dark mechanisms), hides toolbar/method/footer,
   two-column cards, `print-color-adjust:exact` so hex fills survive.
