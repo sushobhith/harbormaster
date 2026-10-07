@@ -218,6 +218,49 @@ const overflow = await mob.evaluate(() => document.documentElement.scrollWidth -
 check('mobile 390px: no horizontal overflow', overflow <= 0, `overflow ${overflow}px`);
 await mob.close();
 
+// --- 11. browser history: New board pushes; other edits replace; Back/Forward restores exact state ---
+await load('#s=historybase&p=4');
+const historyOriginal = await snap();
+const historyStartLen = await page.evaluate(() => history.length);
+let historyRedrawn = historyOriginal;
+for (let i = 0; i < 12 && historyRedrawn.board === historyOriginal.board; i++) {
+  await page.click('#reroll');
+  historyRedrawn = await snap();
+}
+check('history: reroll changes the settlement draw', historyRedrawn.board !== historyOriginal.board);
+check('history: reroll replaces current entry', await page.evaluate(() => history.length) === historyStartLen);
+
+await page.click('#newBoard');
+check('history: New board pushes one entry', await page.evaluate(() => history.length) === historyStartLen + 1);
+await page.click('#players button[data-n="5"]');
+await page.click('#map button[data-map="sea"]');
+await page.click('#noPorts');
+await page.click('#mode button[data-mode="board"]');
+const historyModified = await snap();
+check('history: toggles replace the pushed entry', await page.evaluate(() => history.length) === historyStartLen + 1);
+
+await page.goBack();
+await page.waitForFunction(seed => document.getElementById('seedLabel').textContent === seed, historyRedrawn.seed);
+check('history: Back restores exact previous board', (await snap()).board === historyRedrawn.board);
+check('history: Back restores previous hash and controls', JSON.stringify((await snap()).pressed) === JSON.stringify(historyRedrawn.pressed) && (await snap()).hash === historyRedrawn.hash);
+
+await page.goForward();
+await page.waitForFunction(seed => document.getElementById('seedLabel').textContent === seed, historyModified.seed);
+const historyForward = await snap();
+check('history: Forward restores exact modified board', historyForward.board === historyModified.board);
+check('history: Forward restores defaults/options exactly', JSON.stringify(historyForward.pressed) === JSON.stringify(historyModified.pressed) && historyForward.hash === historyModified.hash);
+
+await page.goBack();
+await page.waitForFunction(seed => document.getElementById('seedLabel').textContent === seed, historyRedrawn.seed);
+await page.reload();
+await page.waitForFunction(() => document.querySelectorAll('#board polygon').length > 0);
+check('history: reload preserves the restored reroll', (await snap()).board === historyRedrawn.board);
+
+await page.click('#newBoard');
+const historyBranch = await snap();
+await page.goForward();
+check('history: creating a new board after Back discards forward history', (await snap()).board === historyBranch.board);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await browser.close();
 process.exit(fail ? 1 : 0);

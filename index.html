@@ -905,7 +905,7 @@ function snakeSpread(geom,resArr,num,nPlayers){
 /* ---------- orchestration ---------- */
 let state={players:4,mode:"fair",map:"classic",noPorts:false,seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
-function generate(fullBoard){
+function generate(fullBoard,historyMode="replace",savedPlacement=null){
   if(fullBoard||!state.board){
     // classic seeds keep their pre-Seafarers namespace so old shared links reproduce
     rnd=mulberry32(xmur3(state.seed+"|"+state.players+(state.map==="sea"?"|sea":""))());
@@ -927,7 +927,7 @@ function generate(fullBoard){
   document.getElementById("noPorts").style.display=fair?"":"none";
   document.getElementById("methodCard").style.display=fair?"":"none";
   if(fair){
-    state.placement=drawSettlements(geom,resArr,num,state.players,portMap,state.noPorts);
+    state.placement=savedPlacement||drawSettlements(geom,resArr,num,state.players,portMap,state.noPorts);
     planRoads(geom,resArr,num,state.placement.pairs,portMap);
     render(geom,resArr,num,ports,state.placement,setup);
     renderPanel(geom,resArr,num,portMap,state.placement);
@@ -939,15 +939,20 @@ function generate(fullBoard){
   document.getElementById("seedLabel").textContent=state.seed;
   const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")
     +(state.noPorts?"&np=1":"");
-  try{history.replaceState(null,"",`#s=${state.seed}&p=${state.players}${mp}`);}catch(_){}
+  const hash=`#s=${state.seed}&p=${state.players}${mp}`;
+  // Save the exact settlement draw in history state: the seed alone only reproduces the first draw.
+  if(historyMode!=="none")try{
+    history[historyMode==="push"?"pushState":"replaceState"](
+      {hash,placement:state.placement},"",hash);
+  }catch(_){}
 }
 function readHash(){
   const m=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
-  if(m.s)state.seed=m.s;
-  if(m.p&&+m.p>=3&&+m.p<=6)state.players=+m.p;
-  if(m.m==="board")state.mode="board";
-  if(m.map==="sea")state.map="sea";
-  if(m.np==="1")state.noPorts=true;
+  state.seed=m.s||newSeed();
+  state.players=Number.isInteger(+m.p)&&+m.p>=3&&+m.p<=6?+m.p:4;
+  state.mode=m.m==="board"?"board":"fair";
+  state.map=m.map==="sea"?"sea":"classic";
+  state.noPorts=m.np==="1";
 }
 document.getElementById("players").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
@@ -959,7 +964,7 @@ document.getElementById("map").addEventListener("click",e=>{
   document.querySelectorAll("#map button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   state.map=b.dataset.map; state.board=null; generate(true);
 });
-document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true)};
+document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true,"push")};
 document.getElementById("reroll").onclick=()=>generate(false);
 document.getElementById("noPorts").onclick=e=>{
   state.noPorts=!state.noPorts;
@@ -997,16 +1002,24 @@ window.__hm={run(seed,players,map,noPorts){
     spread:state.placement.spread
   };
 }};
+function syncControls(){
+  document.querySelectorAll("#players button").forEach(b=>
+    b.setAttribute("aria-pressed",+b.dataset.n===state.players));
+  document.querySelectorAll("#mode button").forEach(b=>
+    b.setAttribute("aria-pressed",b.dataset.mode===state.mode));
+  document.querySelectorAll("#map button").forEach(b=>
+    b.setAttribute("aria-pressed",b.dataset.map===state.map));
+  document.getElementById("noPorts").setAttribute("aria-pressed",state.noPorts);
+}
+window.addEventListener("popstate",e=>{
+  readHash();
+  syncControls();
+  state.board=null;
+  generate(true,"none",e.state?.hash===location.hash?e.state.placement:null);
+});
 readHash();
-if(!state.seed)state.seed=newSeed();
-document.querySelectorAll("#players button").forEach(b=>
-  b.setAttribute("aria-pressed",+b.dataset.n===state.players));
-document.querySelectorAll("#mode button").forEach(b=>
-  b.setAttribute("aria-pressed",b.dataset.mode===state.mode));
-document.querySelectorAll("#map button").forEach(b=>
-  b.setAttribute("aria-pressed",b.dataset.map===state.map));
-document.getElementById("noPorts").setAttribute("aria-pressed",state.noPorts);
-generate(true);
+syncControls();
+generate(true,"replace",history.state?.hash===location.hash?history.state.placement:null);
 })();
 </script>
 
