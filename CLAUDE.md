@@ -173,9 +173,12 @@ badStart, badTarget, badScenario); value gap ≤1 in 93–98%, ≤2 in 100%; 17�
 
 ## SEO / analytics addenda (2026-07-09)
 
-Vercel Web Analytics tag added (`/_vercel/insights/script.js`) — the user must also enable
-Web Analytics in the Vercel dashboard (project `harbormaster` → Analytics) or the script 404s
-and no data collects. There is NO pre-2026-07-09 visitor data (nothing was ever installed).
+Vercel Web Analytics tag added (`/_vercel/insights/script.js`) and **enabled and collecting**
+(confirmed 2026-10-16: 168 visitors / 229 views per 30 days, 91% mobile). The Vercel MCP
+`aggregate_pageviews` call returns "Web Analytics not found" anyway — read numbers from the
+dashboard (project `harbormaster` → Analytics). No pre-2026-07-09 visitor data exists.
+`vercel deploy` still reports the project as `fairhex` and also aliases fairhex.vercel.app —
+cosmetic; the two-step alias to harbormaster.vercel.app is still required.
 FAQ `<details>` in the footer + FAQPage JSON-LD in head; sitemap has `<lastmod>` — bump it on
 content deploys. Still user-action-pending: Google Search Console verification + sitemap
 submission, Bing import, Reddit/BGG backlinks.
