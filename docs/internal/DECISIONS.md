@@ -224,3 +224,18 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected:** waiting for 1.2 to define the baseline (loses two months of the only
   series that exists).
 - **Affects:** ROADMAP Current State; Step 4.
+
+## D-016 — Explicit root rules in `vercel.json`; `/:path*` alone misses `/` on Vercel (2026-10-26)
+- **Decision:** Two extra `redirects` entries with `source: "/"` (one per old host) ahead of the
+  `/:path*` rules from D-011. Everything else in D-011 stands.
+- **Why:** Measured on the first `.fyi` deploy (dpl_GqArofS6eVQoeq5WoUcbsLNPiyAM): on the old hosts
+  `/foo`, `/index.html`, `/robots.txt`, `/og-image.png?x=1` and a never-requested `/vercel.json` all
+  returned 308 to the new host, while `/` and `/?q=1` returned 200 with the new deploy's own
+  `index.html`. The body being the new file rules out a stale alias; other static paths redirecting
+  rules out an edge-cache key collision. So Vercel serves the root document before a `/:path*`
+  host rule is consulted, and the one URL every shared link starts with was the one not redirected.
+  TP-30's first live run caught it (the hash case failed, the query case passed).
+- **Alternatives rejected:** `source: "/(.*)"` with `$1` (would probably work, but untested here and
+  less explicit than naming the root); a client-side fallback redirect in `index.html` (D-011's
+  reasons still apply).
+- **Affects:** `vercel.json`; TP-30 stays the proof; `scripts/verify_live.sh` already checks `/`.

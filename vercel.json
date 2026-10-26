@@ -1,5 +1,7 @@
 {
   "redirects": [
+    { "source": "/", "has": [{ "type": "host", "value": "harbormaster.vercel.app" }], "destination": "https://harbormaster.fyi/", "permanent": true },
+    { "source": "/", "has": [{ "type": "host", "value": "fairhex.vercel.app" }], "destination": "https://harbormaster.fyi/", "permanent": true },
     { "source": "/:path*", "has": [{ "type": "host", "value": "harbormaster.vercel.app" }], "destination": "https://harbormaster.fyi/:path*", "permanent": true },
     { "source": "/:path*", "has": [{ "type": "host", "value": "fairhex.vercel.app" }], "destination": "https://harbormaster.fyi/:path*", "permanent": true }
   ]
