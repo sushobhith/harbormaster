@@ -11,11 +11,10 @@ weekday time (vault `ACTION_BOARD.md`).
 
 <!-- Now = the single current focus. Per-step detail lives in that step's Status line, never here. -->
 
-- **Now:** **Step 2 — the founder's deploy of the `.fyi` cutover.** Repo side landed 2026-10-26
-  (commits `46d3913`..`1274a72`, D-011..D-015, all suites green, not yet pushed). Still the
-  founder's: add the domain to the Vercel project, Porkbun DNS, `vercel deploy --prod`, the
-  old-host alias, then `scripts/verify_live.sh` and TP-30 against live. After that `Now` moves to
-  Step 1 (post the five issues when the founder says so). @bbyy21's $25 credit is still unpaid.
+- **Now:** **Step 1 — post the five bounty issues when the founder says so.** The issues are drafted
+  in Step 1 below; nothing is posted. Before that, two founder items left over from Step 2: pay
+  @bbyy21's $25 credit (then the #14 reply has its proof) and give the word on the front-door sweep.
+  `https://harbormaster.fyi` has been live since 2026-10-26 evening; commits are local, not pushed.
 - **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
   Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
 - **Baseline numbers (Vercel Analytics, read 2026-10-16):** 168 visitors / 229 views per 30 days,
@@ -75,12 +74,15 @@ Nothing here is code. Order is by what unblocks the most.
 5. **Post.** One r/Catan post and one BGG thread after Step 1 ships (fair settlements + Seafarers +
    phone install). Copy is the founder's.
 
-- **Status (2026-10-26):** 2.2 repo side done and landed, deploy pending the founder: `vercel.json`
-  host-matched 308s for `harbormaster.vercel.app` and `fairhex.vercel.app` (hash and query kept),
-  every self-URL moved to `https://harbormaster.fyi/`, og-image re-rendered, `scripts/verify_live.sh`
-  as the post-deploy gate, TP-31/32/33 green and proven red first, TP-30 written and red until the
-  deploy. Founder still to do: add `harbormaster.fyi` (+ `www` as a 308) to the Vercel project,
-  Porkbun DNS, deploy, alias the old host, run the gate. 2.1 sweep **held on the founder's
+- **Status (2026-10-26):** **2.2 shipped.** `harbormaster.fyi` and `www` (308 to apex) added to the
+  Vercel project, Porkbun DNS set to Vercel's recommended records (A `216.198.79.1` + `64.29.17.1`,
+  CNAME `www` → `52b6af7c1ab1380e.vercel-dns-017.com`), deployed twice the same evening: the first
+  deploy (`dpl_GqArofS6…`) left the bare root unredirected on the old hosts, D-016 added explicit
+  root rules, second deploy `dpl_EjyAhhDX…` (`harbormaster-ka5ha9p3m`) is live and aliased from
+  `harbormaster.vercel.app`. Proof: `scripts/verify_live.sh` 9/9 and TP-30 6/6 against live at
+  about 19:40 IST (old-host `#s=abc&p=4` lands on the same board on the new host). Repo side:
+  D-011..D-016, every self-URL on the new host, og-image re-rendered, TP-31/32/33 proven red first.
+  Commits `46d3913`..`db86734` plus this one are local and not yet pushed. 2.1 sweep **held on the founder's
   instruction ("do not reply to anyone yet")**: the #6/#7/#8 close text and the README swap are
   approved verbatim; #10 is to be closed; the #14 reply (needs the @bbyy21 payout link) and the
   Reddit reply are not yet approved; the #9 bot-comment edit and a PR #2 thank-you were declined.
