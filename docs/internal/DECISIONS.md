@@ -135,3 +135,92 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected:** $10 (under the domestic floor); $25 (the old slider default, more than
   the work).
 - **Affects:** ROADMAP Step 1 issue labels (`bounty-12`).
+
+## D-011 — Old hosts redirect with a host-matched 308 in `vercel.json`; the hash survives by standard (2026-10-26)
+- **Decision:** A root `vercel.json` with one `redirects` rule per old public host, `harbormaster.vercel.app`
+  and `fairhex.vercel.app`: `source: "/:path*"`, `has: [{type: "host", value: <old host>}]`,
+  `destination: "https://harbormaster.fyi/:path*"`, `permanent: true` (308). Deployment-specific URLs
+  (`harbormaster-<hash>-sushobhiths-projects.vercel.app`) are deliberately not matched, so previews and
+  the golden/page suites can still be run against a deployment before it is aliased.
+  `www.harbormaster.fyi` is added to the Vercel project as a 308 redirect to the apex, not handled in
+  `vercel.json`. The shared-link seed lives in the URL fragment, which the browser never sends; on a
+  3xx whose `Location` has no fragment the browser re-attaches the original one (Fetch standard,
+  HTTP-redirect fetch, step "if locationURL's fragment is null, set it to request's current URL's
+  fragment"). Query strings are passed through by Vercel's redirect handling. TP-30 is the proof: a
+  live Playwright run opens `https://harbormaster.vercel.app/#s=abc&p=4` and must land on
+  `https://harbormaster.fyi/#s=abc&p=4` with a board drawn; it is written now, is red until the
+  founder's deploy, and is not part of `npm test` because host matching only fires on the live hosts.
+- **Why:** `harbormaster.vercel.app` is a manual alias, not a project domain, so Vercel's per-domain
+  redirect setting cannot be used for it; a host-matched rule in the deployed `vercel.json` is the one
+  mechanism that covers both old hosts and ships with the app. 308 keeps method and is the code
+  Vercel emits for `permanent: true`. A client-side `location.replace` in the page would also work
+  but would serve the whole app first and would break for crawlers.
+- **Alternatives rejected:** Vercel domain-level redirect (does not reach the manual alias); JS
+  redirect in `index.html` (slower, SEO-hostile); dropping the old alias (every link ever shared dies).
+- **Affects:** new `vercel.json`; `CLAUDE.md` deploy section; TP-30; `scripts/verify_live.sh` (D-013).
+
+## D-012 — What changes host, and the new deploy procedure (2026-10-26)
+- **Decision:** Every absolute self-reference moves to `https://harbormaster.fyi/`: `<link rel=canonical>`,
+  `og:url`, `og:image`, `twitter:image`, the `url` of every JSON-LD block that has one, `sitemap.xml`
+  `<loc>` plus `<lastmod>` bumped to the deploy date, `robots.txt` `Sitemap:` line, `package.json`
+  `homepage`, the README play link and badge, the URL text on `docs/og-card.html` with `og-image.png`
+  re-rendered from it (1200×630, same board asset). The Vercel Analytics tag and the GitHub repo URL do
+  not change. `CLAUDE.md` Live/Deploy becomes: `harbormaster.fyi` is a production domain of the Vercel
+  project, so `vercel deploy --prod --yes` assigns it automatically; the manual alias step stays but its
+  job flips: `vercel alias set <deploy> harbormaster.vercel.app` now makes the old host serve the
+  redirect from the new deploy. Verification is `scripts/verify_live.sh` (D-013). TP-31 (`test_page`
+  asserts canonical, OG, Twitter and JSON-LD all start with the new origin and no `vercel.app` string is
+  left in `<head>`) and TP-32 (`sitemap.xml` and `robots.txt` name the new host; `<lastmod>` is a valid
+  date not before 2026-10-26 and not after today) become failing assertions, which `test_page` has not
+  had until now. Golden, balance and UI suites must stay byte-for-byte green: nothing in the script
+  changes.
+- **Why:** A canonical that disagrees with the served host splits ranking between two URLs; the OG
+  image URL on the old host would resolve through a redirect and some scrapers refuse redirected
+  images. The `lastmod` window check guards the easy-to-forget bump without going red next month.
+- **Alternatives rejected:** keeping `vercel.app` canonical during a transition (nothing to transition,
+  there is no inbound SEO equity worth preserving at 168 visitors a month); leaving the OG card text
+  (the card is the first thing a Reddit or BGG reader sees, and it would name a host that redirects).
+- **Affects:** `index.html` head, `sitemap.xml`, `robots.txt`, `package.json`, `README.md`, `CLAUDE.md`,
+  `docs/og-card.html`, `og-image.png`, `test/test_page.mjs`; TP-31, TP-32.
+
+## D-013 — Live verification is a script with negative proof (2026-10-26)
+- **Decision:** `scripts/verify_live.sh [new-host] [old-host ...]`, defaults `harbormaster.fyi` and
+  `harbormaster.vercel.app fairhex.vercel.app`. On the new host it requires `/` → 200 whose body
+  carries the canonical for that exact host, `/og-image.png` → 200 with `image/png`, `/sitemap.xml` and
+  `/robots.txt` → 200 naming the host. On each old host it requires `/` and `/og-image.png?x=1` → 308
+  with `Location` on the new host, path and query intact. `www.<new-host>` must 3xx to the apex. One
+  PASS/FAIL line per check, exit 1 on any FAIL, curl only. TP-33 is two negative runs that must exit
+  non-zero: a host that does not resolve, and `example.com` (which serves 200 but carries no canonical),
+  so the script is shown to check content and not only status.
+- **Why:** The one-line `curl -sI .../og-image.png` in `CLAUDE.md` catches only the alias-not-moved
+  failure. The cutover adds a second way to be wrong (redirect not served, hash or query dropped) and
+  Step 1.3's deploy workflow needs a single smoke command to call.
+- **Alternatives rejected:** a Playwright test for the live checks (the browser is needed only for the
+  hash, which TP-30 covers; everything else is headers).
+- **Affects:** `scripts/verify_live.sh`; `CLAUDE.md` deploy section; ROADMAP 1.3 smoke step; TP-33.
+
+## D-014 — The front-door sweep is done by hand with `gh`, after copy approval (2026-10-26)
+- **Decision:** Four PR comments (#6, #7, #8 close with one text; #10 per the founder's choice), three
+  issue actions (#14 answered with the @bbyy21 payout as proof; #12 and #13 closed as duplicates of #14
+  with a one-line pointer), the edit of the Koduo bot's "released" comment on #9 (founder edits as repo
+  owner; if GitHub refuses, a correcting reply instead), and one Reddit reply the founder posts
+  themself. Every text is the founder's under D-005; the orchestrator posts the GitHub ones with
+  `gh pr close -c` / `gh issue close -c` / `gh issue comment` only after each is approved verbatim.
+- **Why:** Eight writes with hand-approved text are under the delegation threshold; a subagent would
+  add a brief and a review for no gain, and the texts cannot be written by it anyway.
+- **Alternatives rejected:** a sweep script (nothing to reuse; the next sweep will have different text).
+- **Affects:** ROADMAP Step 2.1 Status.
+
+## D-015 — Analytics baseline for the Step 4 gate: the 30 days ending on the cutover date (2026-10-26)
+- **Decision:** The baseline is Vercel Web Analytics for the 30 days ending 2026-10-26, read from the
+  dashboard (project `harbormaster` → Analytics) and written into ROADMAP Current State as visitors,
+  views, mobile share and top countries. The API query endpoints return "Web Analytics not found" for
+  this project (re-confirmed 2026-10-26 on both the count and aggregate endpoints), so the founder
+  reads it. If it is not read on the day, the 2026-10-16 figures already in ROADMAP stand as the
+  baseline and the Status line says so. The custom domain joins the same Vercel project, so the series
+  is unbroken across the cutover; the Step 4 comparison is the 30 days ending about 2026-12-25 against
+  this window.
+- **Why:** The gate needs a before. Nothing is built here; event-level analytics is Step 1.2 (D-003).
+- **Alternatives rejected:** waiting for 1.2 to define the baseline (loses two months of the only
+  series that exists).
+- **Affects:** ROADMAP Current State; Step 4.

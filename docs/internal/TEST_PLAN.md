@@ -25,3 +25,12 @@ Rule: a guard is proven by making it fail first. A test that has never been red 
 | TP-27 | 1.4 | `#tipLink` present in light and dark; absent in `@media print` |
 | TP-28 | 1.5 | "Save image" produces a PNG ≥ 2× the SVG box, non-empty, in the current theme |
 | TP-29 | 1.5 | export does not mutate `state` or the DOM board (`__hm.run` hash equal before and after) |
+
+## Step 2 — domain cutover (D-011..D-013)
+
+| Id | Decision | Assertion | Status |
+|---|---|---|---|
+| TP-30 | D-011 | live: `https://harbormaster.vercel.app/#s=abc&p=4` lands on `https://harbormaster.fyi/#s=abc&p=4` with a board drawn; `fairhex.vercel.app` and `/og-image.png?x=1` 308 to the new host with path and query intact (`test/test_redirect_live.mjs`, not in `npm test`) | written, red until deploy |
+| TP-31 | D-012 | `test_page`: canonical, `og:url`, `og:image`, `twitter:image`, JSON-LD `url` all start with `https://harbormaster.fyi/`; no `vercel.app` in `<head>` | reserved |
+| TP-32 | D-012 | `test_page`: `sitemap.xml` `<loc>` and `robots.txt` `Sitemap:` name the new host; `<lastmod>` is a date in [2026-10-26, today] | reserved |
+| TP-33 | D-013 | `scripts/verify_live.sh` exits non-zero against a host that does not resolve and against `example.com` | reserved |
