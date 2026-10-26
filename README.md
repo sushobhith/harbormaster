@@ -6,9 +6,9 @@
 
 Board, numbers, ports, **and two balanced starting settlements + roads for every player** — before anyone touches a piece.
 
-[**▶ Play it now → harbormaster.vercel.app**](https://harbormaster.vercel.app)
+[**▶ Play it now → harbormaster.fyi**](https://harbormaster.fyi)
 
-[![Live](https://img.shields.io/badge/demo-harbormaster.vercel.app-c94f38)](https://harbormaster.vercel.app)
+[![Live](https://img.shields.io/badge/demo-harbormaster.fyi-c94f38)](https://harbormaster.fyi)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3e7a45)](LICENSE)
 ![No build step](https://img.shields.io/badge/build-none-8fbf6a)
 ![Dependencies](https://img.shields.io/badge/runtime%20deps-0-7d8494)

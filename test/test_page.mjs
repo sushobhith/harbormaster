@@ -1,6 +1,55 @@
 import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
 const dir = process.argv[2];
 const browser = await chromium.launch();
+
+function check(cond, msg) {
+  console.log(`${cond ? 'PASS' : 'FAIL'} ${msg}`);
+  if (!cond) process.exitCode = 1;
+}
+
+// TP-31 (D-012): every absolute self-reference in <head> is on the canonical host.
+const ORIGIN = 'https://harbormaster.fyi/';
+{
+  const page = await browser.newPage();
+  await page.goto(`file://${dir}/index.html`);
+  const h = await page.evaluate(() => {
+    const attr = (sel, a) => document.querySelector(sel)?.getAttribute(a) ?? null;
+    return {
+      canonical: attr('link[rel=canonical]', 'href'),
+      ogUrl: attr('meta[property="og:url"]', 'content'),
+      ogImage: attr('meta[property="og:image"]', 'content'),
+      twImage: attr('meta[name="twitter:image"]', 'content'),
+      ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map(s => s.textContent),
+      head: document.head.innerHTML,
+    };
+  });
+  await page.close();
+  for (const k of ['canonical', 'ogUrl', 'ogImage', 'twImage'])
+    check(typeof h[k] === 'string' && h[k].startsWith(ORIGIN), `TP-31 ${k} starts with ${ORIGIN} (${h[k]})`);
+  h.ld.forEach((txt, i) => {
+    let obj = null;
+    try { obj = JSON.parse(txt); } catch { /* reported below */ }
+    check(obj !== null, `TP-31 JSON-LD block ${i} parses`);
+    if (obj && 'url' in obj) check(String(obj.url).startsWith(ORIGIN), `TP-31 JSON-LD block ${i} url starts with ${ORIGIN} (${obj.url})`);
+  });
+  check(!h.head.includes('vercel.app'), 'TP-31 no "vercel.app" in <head>');
+}
+
+// TP-32 (D-012): sitemap + robots name the new host; lastmod in [2026-10-26, today UTC].
+{
+  const sitemap = readFileSync(`${dir}/sitemap.xml`, 'utf8');
+  const robots = readFileSync(`${dir}/robots.txt`, 'utf8');
+  const loc = sitemap.match(/<loc>([^<]*)<\/loc>/)?.[1];
+  check(loc === ORIGIN, `TP-32 sitemap <loc> is ${ORIGIN} (${loc})`);
+  const sm = robots.match(/^Sitemap:\s*(\S+)/m)?.[1];
+  check(sm === `${ORIGIN}sitemap.xml`, `TP-32 robots Sitemap: is ${ORIGIN}sitemap.xml (${sm})`);
+  const lastmod = sitemap.match(/<lastmod>([^<]*)<\/lastmod>/)?.[1];
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(lastmod ?? '') && !isNaN(Date.parse(`${lastmod}T00:00:00Z`))
+    && new Date(`${lastmod}T00:00:00Z`).toISOString().slice(0, 10) === lastmod;
+  const today = new Date().toISOString().slice(0, 10);
+  check(iso && lastmod >= '2026-10-26' && lastmod <= today, `TP-32 sitemap <lastmod> is an ISO date in [2026-10-26, ${today}] (${lastmod})`);
+}
 
 async function audit(page, label) {
   const r = await page.evaluate(() => {
@@ -78,3 +127,4 @@ for (const [scheme, suffix] of [['light', 'light'], ['dark', 'dark']]) {
 }
 await browser.close();
 console.log('\nside length s=52 → adjacent-vertex distance is 52; distance rule OK if minSettleDist > 52');
+process.exit(process.exitCode || 0);

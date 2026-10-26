@@ -5,14 +5,18 @@ settlements, roads, and fixed ports** for 3–6 players. Built July 2026 for Sus
 group (they play 4-player base and 6-player extension). Seafarers "Heading for New Shores"
 mode added 2026-07-09 (requested on Reddit by a 5-player Seafarers group).
 
-- **Live (canonical):** https://harbormaster.vercel.app — Vercel project `harbormaster`
-  (sushobhiths-projects; renamed from `fairhex` 2026-07-06, and `ssoProtection` disabled so the
-  site is public). GitHub: https://github.com/sushobhith/harbormaster
-- **Deploy (TWO steps — the alias does NOT auto-follow):**
-  1. `vercel deploy --prod --yes`
+- **Live (canonical):** https://harbormaster.fyi (since 2026-10-26, D-011/D-012) — Vercel project
+  `harbormaster` (sushobhiths-projects; renamed from `fairhex` 2026-07-06, so its only built-in
+  domain is still `fairhex.vercel.app`; `ssoProtection` disabled so the site is public).
+  `www.harbormaster.fyi` is a Vercel-side 308 to the apex. The old hosts `harbormaster.vercel.app`
+  and `fairhex.vercel.app` 308 to the new one via host-matched rules in `vercel.json` (the `#s=`
+  hash survives). GitHub: https://github.com/sushobhith/harbormaster
+- **Deploy (TWO steps — the old-host alias does NOT auto-follow):**
+  1. `vercel deploy --prod --yes` — `harbormaster.fyi` is a production domain of the project, so
+     this assigns it automatically.
   2. `vercel alias set "$(vercel ls | grep -oE 'https://harbormaster-[a-z0-9]+-sushobhiths-projects.vercel.app' | head -1)" harbormaster.vercel.app`
-  Skipping step 2 leaves the public URL on the previous deploy (og-image/robots/sitemap 404,
-  stale title). Verify after: `curl -sI https://harbormaster.vercel.app/og-image.png` → 200.
+  Step 2 makes the OLD host serve the redirect from the new deploy; skipping it leaves old shared
+  links on a stale deploy that does not redirect. Verify after: `scripts/verify_live.sh` (D-013).
   No build step; `index.html` is the whole app.
 - **Also published** as a Claude artifact: https://claude.ai/code/artifact/eb2f82e4-a8ef-45b6-a984-265ff21a98db
   (note: the Artifact tool wants the file WITHOUT `<!doctype>/<html>/<head>/<body>` wrapper —
@@ -31,8 +35,8 @@ card (image → `/og-image.png`), and WebApplication JSON-LD. `robots.txt` + `si
 point at the canonical URL. `og-image.png` (1200×630) is rendered from `docs/og-card.html`
 (uses `docs/assets/board-dark.png`) — re-render with a headless screenshot if the card
 changes. `.vercelignore` keeps the deploy to just the static files (index.html, og-image,
-robots, sitemap). To improve ranking further the user must add the site to Google Search
-Console and get backlinks (Reddit/BGG) — on-page SEO alone won't outrank established sites.
+robots, sitemap, and `vercel.json` with the old-host redirects). To improve ranking further
+the user must add the site to Google Search Console and get backlinks (Reddit/BGG) — on-page SEO alone won't outrank established sites.
 
 ## Why this exists
 
