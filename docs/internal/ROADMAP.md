@@ -17,11 +17,12 @@ weekday time (vault `ACTION_BOARD.md`).
   `https://harbormaster.fyi` has been live since 2026-10-26 evening; commits are local, not pushed.
 - **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
   Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
-- **Baseline numbers (Vercel Analytics, read 2026-10-16):** 168 visitors / 229 views per 30 days,
-  91% mobile. No custom events exist yet, so nothing is known about what visitors do on the page.
-  D-015 asks for a dashboard read of the 30 days ending 2026-10-26 (the API still answers "Web
-  Analytics not found", re-confirmed 2026-10-26); until the founder reads it, these figures are the
-  Step 4 baseline.
+- **Baseline numbers (D-015, Vercel Analytics, 30 days 2026-09-26 to 2026-10-26, read 2026-10-26
+  via `vercel api`):** 185 visitors / 254 views, 84% mobile (156 of 185). Countries: IN 68 (37%),
+  US 36, CA 30, KR 14, GB 6, ES 6, AU 5, DE 4; 63% of visitors outside India. Referrers: almost all
+  direct or unknown; google.com 9, reddit app 3, bing.com 2. Only `/` is ever requested. No custom
+  events exist yet, so nothing is known about what visitors do on the page. Read command:
+  `vercel api "/v1/query/web-analytics/visits/aggregate?projectId=prj_oja7dumJosgyqpxcTr8StJ15KVvX&teamId=team_4x1sKLrHjPimznzfpf0BkFag&since=...&until=...&by=country" --method GET`.
 - **Blockers:** none on the build. Search Console, Bing and the domain need founder logins.
 
 ## The thesis, in one line

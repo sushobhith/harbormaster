@@ -224,6 +224,10 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected:** waiting for 1.2 to define the baseline (loses two months of the only
   series that exists).
 - **Affects:** ROADMAP Current State; Step 4.
+- **Amended 2026-10-26 (later):** the "Web Analytics not found" answer is the MCP token's, not the
+  project's. The same endpoints answer through the CLI (`vercel api /v1/query/web-analytics/visits/...`
+  with `projectId` and `teamId` as query parameters). Baseline read that way and written into ROADMAP
+  Current State; the 2026-10-16 figures are superseded. Step 4 reads the same way.
 
 ## D-016 — Explicit root rules in `vercel.json`; `/:path*` alone misses `/` on Vercel (2026-10-26)
 - **Decision:** Two extra `redirects` entries with `source: "/"` (one per old host) ahead of the
