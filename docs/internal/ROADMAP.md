@@ -1,6 +1,6 @@
 # Harbormaster — Roadmap
 
-Harbormaster is a free, open-source Catan setup generator (`harbormaster.vercel.app`). This file is the
+Harbormaster is a free, open-source Catan setup generator (`harbormaster.fyi`; `harbormaster.vercel.app` redirects). This file is the
 single source of truth for where the project is and what comes next. Decisions and their reasons live
 in `DECISIONS.md`; test ids in `TEST_PLAN.md`. Architecture is `CLAUDE.md` at the repo root.
 
@@ -11,13 +11,18 @@ weekday time (vault `ACTION_BOARD.md`).
 
 <!-- Now = the single current focus. Per-step detail lives in that step's Status line, never here. -->
 
-- **Now:** **Step 0 — docs and the first paid contributor.** This file, `DECISIONS.md` and
-  `TEST_PLAN.md` written 2026-10-26. @bbyy21 (PR #19, merged 2026-10-16) has signed in to Koduo and
-  holds a $25 credit; paying it by hand and marking the row paid closes Koduo step 10.11d.
+- **Now:** **Step 2 — the founder's deploy of the `.fyi` cutover.** Repo side landed 2026-10-26
+  (commits `46d3913`..`1274a72`, D-011..D-015, all suites green, not yet pushed). Still the
+  founder's: add the domain to the Vercel project, Porkbun DNS, `vercel deploy --prod`, the
+  old-host alias, then `scripts/verify_live.sh` and TP-30 against live. After that `Now` moves to
+  Step 1 (post the five issues when the founder says so). @bbyy21's $25 credit is still unpaid.
 - **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
   Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
 - **Baseline numbers (Vercel Analytics, read 2026-10-16):** 168 visitors / 229 views per 30 days,
   91% mobile. No custom events exist yet, so nothing is known about what visitors do on the page.
+  D-015 asks for a dashboard read of the 30 days ending 2026-10-26 (the API still answers "Web
+  Analytics not found", re-confirmed 2026-10-26); until the founder reads it, these figures are the
+  Step 4 baseline.
 - **Blockers:** none on the build. Search Console, Bing and the domain need founder logins.
 
 ## The thesis, in one line
@@ -60,7 +65,7 @@ Nothing here is code. Order is by what unblocks the most.
    close two as duplicates. Reply to redditor_286 that the port bug shipped (drafted 2026-09-23).
 2. **Domain (D-008).** `harbormaster.fyi` registered at Porkbun 2026-10-26 (expires 2027-10-26,
    auto-renew on, lock on, WHOIS privacy on). Cutover is the Step 2 orchestrate brief in the vault;
-   `vercel.app` stays live and becomes a redirect.
+   `vercel.app` stays live and becomes a redirect (D-011, D-012).
 3. **Search.** Google Search Console verification + sitemap, Bing import. Pending since 2026-07-09.
 4. **Research (deep-research, filed in the vault as `knowledge/pages/board-game-tools-monetisation.md`).**
    Question: what do users of free board-game tools actually pay or donate for, and what did tools
@@ -70,7 +75,16 @@ Nothing here is code. Order is by what unblocks the most.
 5. **Post.** One r/Catan post and one BGG thread after Step 1 ships (fair settlements + Seafarers +
    phone install). Copy is the founder's.
 
-- **Status:** not started.
+- **Status (2026-10-26):** 2.2 repo side done and landed, deploy pending the founder: `vercel.json`
+  host-matched 308s for `harbormaster.vercel.app` and `fairhex.vercel.app` (hash and query kept),
+  every self-URL moved to `https://harbormaster.fyi/`, og-image re-rendered, `scripts/verify_live.sh`
+  as the post-deploy gate, TP-31/32/33 green and proven red first, TP-30 written and red until the
+  deploy. Founder still to do: add `harbormaster.fyi` (+ `www` as a 308) to the Vercel project,
+  Porkbun DNS, deploy, alias the old host, run the gate. 2.1 sweep **held on the founder's
+  instruction ("do not reply to anyone yet")**: the #6/#7/#8 close text and the README swap are
+  approved verbatim; #10 is to be closed; the #14 reply (needs the @bbyy21 payout link) and the
+  Reddit reply are not yet approved; the #9 bot-comment edit and a PR #2 thank-you were declined.
+  2.3 Search Console / Bing not started. 2.4 research not started (separate run). 2.5 after Step 1.
 
 ## Step 3 — Build what the research says people value
 - **Why:** Both previous features people asked for (board-only mode, Seafarers) came from r/Catan.
