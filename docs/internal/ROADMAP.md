@@ -58,8 +58,9 @@ Nothing here is code. Order is by what unblocks the most.
 1. **Clean the repo front door.** Close #6/#7/#8 naming deleted issue #4. Ask @mortenbruket-max to
    rebase #10 or close it with thanks. Answer #12/#13/#14 once with the @bbyy21 payout as proof and
    close two as duplicates. Reply to redditor_286 that the port bug shipped (drafted 2026-09-23).
-2. **Domain (D-002).** Apply for `harbormaster.eu.org` (free); keep `vercel.app` live throughout.
-   If eu.org has not approved within 30 days, stay on `vercel.app` and stop.
+2. **Domain (D-008).** `harbormaster.fyi` registered at Porkbun 2026-10-26 (expires 2027-10-26,
+   auto-renew on, lock on, WHOIS privacy on). Cutover is the Step 2 orchestrate brief in the vault;
+   `vercel.app` stays live and becomes a redirect.
 3. **Search.** Google Search Console verification + sitemap, Bing import. Pending since 2026-07-09.
 4. **Research (deep-research, filed in the vault as `knowledge/pages/board-game-tools-monetisation.md`).**
    Question: what do users of free board-game tools actually pay or donate for, and what did tools
