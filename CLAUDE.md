@@ -18,6 +18,12 @@ mode added 2026-07-09 (requested on Reddit by a 5-player Seafarers group).
   (note: the Artifact tool wants the file WITHOUT `<!doctype>/<html>/<head>/<body>` wrapper —
   strip the wrapper before republishing there; Vercel wants it WITH).
 
+## Roadmap and decisions (added 2026-10-26)
+
+Where the project is and what comes next: `docs/internal/ROADMAP.md` (Current State block is the
+single source of truth). Why: `docs/internal/DECISIONS.md` (D-001 onward). Test ids:
+`docs/internal/TEST_PLAN.md`. Read ROADMAP before any build; write the decision before the build.
+
 ## SEO / deploy assets (root, deployed; rest is .vercelignore'd)
 
 `index.html` head has full SEO: keyword title/description, canonical, Open Graph + Twitter
