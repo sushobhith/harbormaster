@@ -7,14 +7,16 @@ in `DECISIONS.md`; test ids in `TEST_PLAN.md`. Architecture is `CLAUDE.md` at th
 The project is a weekend side project and a Koduo dogfood repo. It does not compete with Koduo for
 weekday time (vault `ACTION_BOARD.md`).
 
-## Current State (Last Updated: 2026-10-26)
+## Current State (Last Updated: 2026-10-27)
 
 <!-- Now = the single current focus. Per-step detail lives in that step's Status line, never here. -->
 
-- **Now:** **Step 1 — post the five bounty issues when the founder says so.** The issues are drafted
-  in Step 1 below; nothing is posted. Before that, two founder items left over from Step 2: pay
-  @bbyy21's $25 credit (then the #14 reply has its proof) and give the word on the front-door sweep.
-  `https://harbormaster.fyi` has been live since 2026-10-26 evening; commits are local, not pushed.
+- **Now:** **Deploy Step 3a by hand** (`vercel deploy --prod --yes`, the alias step, `scripts/verify_live.sh`
+  must pass 10/10 with the new font check, then paste `https://harbormaster.fyi` into WhatsApp to see the
+  new preview card). The Tide revamp is built, reviewed and green on local `main` (commits `6c33e4f`..`8714e90`,
+  2026-10-27), not pushed, not deployed. After the deploy: **Step 3b Today's board**, and the five Step 1
+  Koduo issues can be posted against the new markup. Two founder items still open from Step 2: pay
+  @bbyy21's $25 credit and the Reddit reply.
 - **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
   Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
 - **Baseline numbers (D-015, Vercel Analytics, 30 days 2026-09-26 to 2026-10-26, read 2026-10-26
@@ -111,7 +113,16 @@ Nothing here is code. Order is by what unblocks the most.
   included; founder picks one of two or three directions from a tappable page, then one /orchestrate
   session builds it. 3b **Today's board**: one button, date-seeded, same board for everyone, no score.
   Step 1 Koduo issues stay unposted until 3a lands.
-- **Status:** product decided 2026-10-27 (D-019); visual system "Tide" night/day pair picked the same day (D-020, design canvas https://claude.ai/artifact/5HEyuYS5CwvChu3toYVuhb). 3a brief written in the vault (`founder-os/tasks/harbormaster/2026-10-27-step-3a-tide-revamp.md`), not started.
+- **Status:** product decided 2026-10-27 (D-019); visual system "Tide" night/day pair picked the same day
+  (D-020, design canvas https://claude.ai/artifact/5HEyuYS5CwvChu3toYVuhb). **3a built 2026-10-27** in one
+  attended /orchestrate session: decisions D-021..D-029 first (`6c33e4f`, `a6eff25`, copy approved one string
+  at a time), TEST_PLAN rows `09f81da`, then two Opus worktrees: Piece A `index.html` + `test_tide.mjs`
+  (`9169361`, 9 min) and Piece B fonts + og card + `test_assets.mjs` (`a317c28`, `623b455`, 4 min);
+  orchestrator fixes after the screenshot-vs-canvas review (`36cf3ee` tagline, classic sea ring, copper
+  segments, legend contrast; `c811c79` og board fit; `8714e90` centred fairness line, no hairlines on the
+  secondary row, the founder's two picks). `npm test` green: golden identical (TP-34), ui 176/176, tide 76
+  (TP-35..38), assets 14 (TP-39/40), balance and page clean. **Not deployed, not pushed**: the deploy is the
+  founder's (see Now). 3b not started.
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip

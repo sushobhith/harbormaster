@@ -145,13 +145,36 @@ both number-token sets (main/island), harbor counts all match exactly.
 - **v1 simplifications** (documented in the cheat sheet): starting roads only (official rules
   allow a ship instead); the 2-VP-per-island race isn't priced into start values.
 
+## Visual system: "Tide" (added 2026-10-27, D-020..D-029)
+
+Night and day pair, few boxes, editorial type. Tokens live in the three `:root` blocks at the top of the
+stylesheet (Day on bare `:root`, Night under `prefers-color-scheme: dark` guarded by
+`:not([data-theme="light"])` and under `[data-theme="dark"]`); the exact values and the reasons are
+D-020 (palette) and D-026 (board). `#theme` toggles and stores `localStorage["hm-theme"]` (D-023); print
+forces Day. Layout: D-021 (phone order) and D-022 (desktop, `min-width: 900px`). Fonts are self-hosted in
+`fonts/` (Instrument Serif for the wordmark, Manrope variable for everything else, OFL texts beside them,
+D-025) — never add a Google Fonts link; `test_assets` fails on one. The link preview is rendered from the
+real page: `node scripts/render-og.mjs "$PWD"` writes `docs/assets/board-day.png` and `og-image.png`
+(D-027); re-run it after any visible change to the board and before a deploy, or TP-40 goes red locally.
+Element ids and the segment button texts are frozen by D-024 (both UI suites read them). The classic
+board's sea ring is a hexagonal `clip-path` on `.boardwrap`, not an SVG element, so hex counts in the
+tests are unchanged. Copy on the page is the founder's (D-005, D-029): change a visible string only on
+their call.
+
 ## Testing (run before every deploy)
 
 ```bash
 node test/test_golden.mjs "$PWD"             # classic outputs byte-identical to the frozen baseline
 node test/test_balance.mjs "$PWD" 100        # from repo root; needs playwright importable
 node test/test_page.mjs "$PWD"               # render/theme/constraint smoke test
+node test/test_ui.mjs "$PWD"                 # toolbar, hash, copy link, history (176 assertions)
+node test/test_tide.mjs "$PWD"               # TP-35..38: theme toggle, ids, 390px layout, contrast
+node test/test_assets.mjs "$PWD"             # TP-39/40: no Google Fonts, fonts load, og-image 1200x630
 ```
+
+`npm test` runs all six (TEST_PLAN TP-34..40 for the Step 3a rows). `test_tide` and `test_assets`
+open `index.html` from `file://` and serve `/fonts/*` through a Playwright route, so they need the
+`fonts/` directory present.
 
 `test_golden.mjs` compares classic `__hm.run` output hashes against
 `test/golden_classic.json` (**re-captured 2026-09-01** with the corrected `portAt` port
