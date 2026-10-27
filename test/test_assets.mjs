@@ -1,7 +1,7 @@
 // Step 3a asset checks (D-025, D-027, D-028): TP-39 self-hosted fonts, TP-40 link preview image.
 // Usage: node test/test_assets.mjs "$PWD"
 import { chromium } from 'playwright';
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { PNG } from 'pngjs';
 const dir = process.argv[2];
 const browser = await chromium.launch();
@@ -97,6 +97,42 @@ const FAMILIES = ['Manrope', 'Instrument Serif'];
   for (const name of scripts) {
     const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     check(new RegExp(`^\\s*run:\\s*npm run ${esc}\\s*$`, 'm').test(ci), `TP-45 .github/workflows/ci.yml has a "run: npm run ${name}" step`);
+  }
+}
+
+// TP-46 (D-032, D-033): previews are current and nothing under docs/assets is orphaned
+{
+  const assetsDir = `${dir}/docs/assets`;
+  const docs = ['README.md', 'docs/og-card.html'];
+  // README says docs/assets/x; og-card.html sits in docs/ and says assets/x. Both mean docs/assets/x.
+  const referenced = new Set();
+  for (const f of docs) {
+    for (const m of readFileSync(`${dir}/${f}`, 'utf8').matchAll(/(?:docs\/)?assets\/([\w.-]+)/g)) referenced.add(m[1]);
+  }
+  // (a) every referenced asset exists
+  for (const name of referenced) {
+    check(existsSync(`${assetsDir}/${name}`), `TP-46 docs/assets/${name} (referenced by ${docs.join(' or ')}) exists`);
+  }
+  // (b) no png or gif under docs/assets is unreferenced by README.md, docs/og-card.html or scripts/*
+  const scriptsDir = `${dir}/scripts`;
+  const corpus = [...docs.map(f => `${dir}/${f}`), ...readdirSync(scriptsDir).map(f => `${scriptsDir}/${f}`)]
+    .filter(p => statSync(p).isFile())
+    .map(p => readFileSync(p, 'utf8'))
+    .join('\n');
+  const images = readdirSync(assetsDir).filter(f => /\.(png|gif)$/i.test(f)).sort();
+  for (const name of images) {
+    check(corpus.includes(name), `TP-46 docs/assets/${name} is referenced by README.md, docs/og-card.html or scripts/ (else it is an orphan: delete it)`);
+  }
+  // (c) outside CI, each referenced png or gif is not older than index.html
+  if (process.env.CI) {
+    console.log('SKIP TP-46 mtime half: CI is set and git checkout does not preserve mtimes (D-028)');
+  } else {
+    const sec = p => Math.floor(statSync(p).mtimeMs / 1000);
+    const page = sec(`${dir}/index.html`);
+    for (const name of [...referenced].filter(n => /\.(png|gif)$/i.test(n) && existsSync(`${assetsDir}/${n}`)).sort()) {
+      const a = sec(`${assetsDir}/${name}`);
+      check(a >= page, `TP-46 docs/assets/${name} mtime ${new Date(a * 1000).toISOString()} >= index.html mtime ${new Date(page * 1000).toISOString()} (re-run scripts/render-og.mjs and scripts/make-demo-gif.mjs if not)`);
+    }
   }
 }
 
