@@ -310,6 +310,126 @@ const historyBranch = await snap();
 await page.goForward();
 check('history: creating a new board after Back discards forward history', (await snap()).board === historyBranch.board);
 
+// --- 12. Today's board (TP-41..44, D-031) ---
+// The clock is frozen on every page this section opens, so today's seed is a literal.
+const FROZEN = new Date('2026-10-27T12:00:00Z');
+const TODAY = 'today-2026-10-27';
+const hasBoard = () => document.querySelectorAll('#board polygon').length > 0;
+const tapToday = async p => {
+  if (!(await p.$('#today'))) return false;
+  await p.click('#today');
+  await p.waitForFunction(() => document.getElementById('seedLabel').textContent.startsWith('today-'), null, { timeout: 5000 }).catch(() => {});
+  return true;
+};
+const todayState = p => p.evaluate(() => {
+  const t = document.getElementById('today');
+  return {
+    hash: location.hash,
+    seed: document.getElementById('seedLabel').textContent,
+    board: document.getElementById('board').innerHTML,
+    pressed: t ? t.getAttribute('aria-pressed') : null,
+  };
+});
+const openPage = async (hash, date = FROZEN) => {
+  const p = await ctx.newPage();
+  p.on('pageerror', e => check('no page errors (today)', false, String(e)));
+  if (date) await p.clock.setFixedTime(date);
+  await p.goto(`file://${dir}/index.html${hash}`);
+  await p.waitForFunction(hasBoard);
+  return p;
+};
+const readCopied = p => p.evaluate(async () => {
+  try { const t = await navigator.clipboard.readText(); if (t.includes('#s=')) return t; } catch (_) {}
+  const b = document.getElementById('copy').textContent;
+  return b.includes('#s=') ? b : location.href;
+});
+
+// TP-41: the button, its place, the seed it sets, and aria-pressed derived from the seed
+await page.clock.setFixedTime(FROZEN);
+await load('#s=abc&p=4');
+const todayBtn = await page.evaluate(() => {
+  const t = document.getElementById('today');
+  return {
+    exists: !!t,
+    isBtn: !!t && t.classList.contains('btn'),
+    text: t ? t.textContent.trim() : null,
+    order: [...document.querySelector('.row-sec').children].map(c => c.id),
+  };
+});
+check('TP-41 #today exists', todayBtn.exists);
+check('TP-41 #today has class btn', todayBtn.isBtn);
+check("TP-41 #today label is Today's board", todayBtn.text === "Today's board", `got ${todayBtn.text}`);
+check('TP-41 .row-sec order reroll,today,copy,print', JSON.stringify(todayBtn.order) === JSON.stringify(['reroll', 'today', 'copy', 'print']), JSON.stringify(todayBtn.order));
+await tapToday(page);
+let td = await todayState(page);
+check('TP-41 click sets hash', td.hash === `#s=${TODAY}&p=4`, td.hash);
+check('TP-41 click sets seed label', td.seed === TODAY, td.seed);
+check('TP-41 aria-pressed true after click', td.pressed === 'true', String(td.pressed));
+await page.click('#newBoard');
+td = await todayState(page);
+check('TP-41 aria-pressed false after New board', td.pressed === 'false', String(td.pressed));
+check('TP-41 New board leaves today seed', td.seed !== TODAY, td.seed);
+await page.goBack();
+await page.waitForFunction(seed => document.getElementById('seedLabel').textContent === seed, TODAY, { timeout: 5000 }).catch(() => {});
+td = await todayState(page);
+check('TP-41 aria-pressed true again after Back', td.pressed === 'true' && td.seed === TODAY, `${td.pressed} ${td.seed}`);
+await load('#s=abc&p=4&m=board');
+const todayBoardMode = await page.evaluate(() => {
+  const t = document.getElementById('today');
+  return {
+    visible: !!t && getComputedStyle(t).display !== 'none',
+    tracks: getComputedStyle(document.querySelector('.row-sec')).gridTemplateColumns.trim().split(/\s+/).length,
+  };
+});
+check('TP-41 #today visible in Board only', todayBoardMode.visible);
+check('TP-41 .row-sec has three columns in Board only', todayBoardMode.tracks === 3, `got ${todayBoardMode.tracks}`);
+
+// TP-42: same date + players + map => same board on two fresh pages; other players/map differ
+const openToday = async (hash, date = FROZEN) => {
+  const p = await openPage(hash, date);
+  await tapToday(p);
+  return { p, ...(await todayState(p)) };
+};
+const t4a = await openToday('#s=x&p=4');
+const t4b = await openToday('#s=x&p=4');
+check('TP-42 both pages on today seed', t4a.seed === TODAY && t4b.seed === TODAY, `${t4a.seed} ${t4b.seed}`);
+check('TP-42 two pages, 4p classic: identical board', t4a.board === t4b.board);
+const t6a = await openToday('#s=x&p=6');
+const t6b = await openToday('#s=x&p=6');
+check('TP-42 6p differs from 4p', t6a.board !== t4a.board);
+check('TP-42 two pages, 6p: identical board', t6a.seed === TODAY && t6a.board === t6b.board);
+const tsa = await openToday('#s=x&p=4&map=sea');
+const tsb = await openToday('#s=x&p=4&map=sea');
+check('TP-42 sea 4p differs from classic 4p', tsa.board !== t4a.board);
+check('TP-42 two pages, sea 4p: identical board', tsa.seed === TODAY && tsa.board === tsb.board);
+for (const x of [t4b, t6a, t6b, tsa, tsb]) await x.p.close();
+
+// TP-44: Copy link on today's board reopens it; an old link still draws, not pressed
+await t4a.p.click('#copy');
+const todayLink = await readCopied(t4a.p);
+check('TP-44 link carries today seed and players', todayLink.includes(`s=${TODAY}`) && todayLink.includes('p=4'), todayLink);
+const reopened = await openPage(todayLink.includes('#s=') ? todayLink.slice(todayLink.indexOf('#')) : '#s=none&p=4');
+const reopenedState = await todayState(reopened);
+check('TP-44 reopened link: identical board', reopenedState.board === t4a.board);
+check('TP-44 reopened link: #today pressed', reopenedState.pressed === 'true', String(reopenedState.pressed));
+await reopened.close();
+const oldLink = await openPage('#s=abc&p=4');
+const oldState = await todayState(oldLink);
+check('TP-44 old link: board drawn', await oldLink.evaluate(hasBoard));
+check('TP-44 old link: #today not pressed', oldState.pressed === 'false', String(oldState.pressed));
+check('TP-44 old link: seed label abc', oldState.seed === 'abc', oldState.seed);
+await oldLink.close();
+
+// TP-43: the seed, not the clock, drives the board
+const unfrozen = await openPage(`#s=${TODAY}&p=4`, null);
+const unfrozenBoard = await unfrozen.evaluate(() => document.getElementById('board').innerHTML);
+check('TP-43 opening the today link without a frozen clock draws the clicked board', unfrozenBoard === t4a.board);
+const runLink = await unfrozen.evaluate(s => JSON.stringify(window.__hm.run(s, 4)), TODAY);
+const runClicked = await t4a.p.evaluate(() => JSON.stringify(window.__hm.run(document.getElementById('seedLabel').textContent, 4)));
+check('TP-43 __hm.run(today seed) equals __hm.run(clicked seed)', runLink === runClicked);
+await unfrozen.close();
+await t4a.p.close();
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await browser.close();
 process.exit(fail ? 1 : 0);

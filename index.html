@@ -55,6 +55,8 @@
       "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Seafarers map generates the official Heading for New Shores scenario for 3-6 players: main island, small islands with gold fields, their two separate number-token sets, and harbors on the official scenario edges, all balanced the same way as the base game." } },
     { "@type": "Question", "name": "Can I share a generated board with my group?",
       "acceptedAnswer": { "@type": "Answer", "text": "Every board has a seed in the URL. Copy the link and everyone who opens it sees the identical setup, including the starting settlements." } },
+    { "@type": "Question", "name": "What is Today's board?",
+      "acceptedAnswer": { "@type": "Answer", "text": "One shared board a day. Everyone who taps Today's board on the same day, with the same player count and map, gets the same board and the same fair starting settlements. Copy the link to play the same board as your friends." } },
     { "@type": "Question", "name": "Is it free?",
       "acceptedAnswer": { "@type": "Answer", "text": "Free, no signup, open source. It is a single HTML file that runs entirely in your browser." } }
   ]
@@ -156,7 +158,8 @@
   .btn.primary{background:var(--accent);color:var(--on-accent);width:100%;min-height:54px;
     font-size:1.02rem;border-radius:12px}
   .btn:active{transform:translateY(1px)}
-  .row-sec{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .row-sec{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  body[data-mode="board"] .row-sec{grid-template-columns:repeat(3,1fr)}
   .row-sec .btn{min-width:0;padding-inline:.3rem;white-space:nowrap}
   .chipbtn{border:1px solid var(--line);border-radius:99px;min-height:40px;padding:.35rem .85rem;
     font-weight:600}
@@ -317,6 +320,7 @@ try{var t=localStorage.getItem("hm-theme");
         <li><b>±N</b> at the top = best player minus worst player.
           0 or 1 = even game. Above 2 → hit Re-draw.</li>
         <li><b>Weakest start plays first.</b> Order is on each card.</li>
+        <li><b>Today's board</b> = the same board for everyone, every day, for your player count. Share the link.</li>
       </ul>
       <b>Built-in rules</b>
       <ul>
@@ -362,6 +366,7 @@ the balanced board and leaves placement to the table.</p>
 fields, their two separate number-token sets, and harbors on the official scenario edges.</p>
 <p><b>Can I share a board?</b> Every board has a seed in the URL. Copy the link and everyone
 sees the identical setup, settlements included.</p>
+<p><b>What is Today's board?</b> One shared board a day. Everyone who taps Today's board on the same day, with the same player count and map, gets the same board and the same fair starting settlements. Copy the link to play the same board as your friends.</p>
 <p><b>Is it free?</b> Free, no signup, open source. One HTML file, runs entirely in your browser.</p>
 </details></footer>
   </div>
@@ -380,6 +385,7 @@ sees the identical setup, settlements included.</p>
     <div class="toolbar row-new"><button class="btn primary" id="newBoard">New board</button></div>
     <div class="toolbar row-sec">
       <button class="btn" id="reroll">Re-draw spots</button>
+      <button class="btn" id="today" aria-pressed="false">Today's board</button>
       <button class="btn" id="copy">Copy link</button>
       <button class="btn" id="print">Print</button>
     </div>
@@ -1117,6 +1123,7 @@ function snakeSpread(geom,resArr,num,nPlayers){
 let state={players:4,mode:"fair",map:"classic",noPorts:false,allRes:false,
   seed:null,board:null,placement:null};
 function newSeed(){return Math.random().toString(36).slice(2,8)}
+function todaySeed(){return "today-"+new Date().toISOString().slice(0,10)}
 function generate(fullBoard,historyMode="replace",savedPlacement=null){
   if(fullBoard||!state.board){
     // classic seeds keep their pre-Seafarers namespace so old shared links reproduce
@@ -1135,6 +1142,7 @@ function generate(fullBoard,historyMode="replace",savedPlacement=null){
   const {setup,geom,resArr,num,ports,portMap}=state.board;
   const fair=state.mode!=="board";
   document.body.dataset.map=state.map;
+  document.body.dataset.mode=state.mode;
   document.getElementById("reroll").style.display=fair?"":"none";
   document.getElementById("noPorts").style.display=fair?"":"none";
   document.getElementById("allRes").style.display=fair?"":"none";
@@ -1151,6 +1159,7 @@ function generate(fullBoard,historyMode="replace",savedPlacement=null){
     renderBoardPanel(state.map==="sea",snakeSpread(geom,resArr,num,state.players));
   }
   document.getElementById("seedLabel").textContent=state.seed;
+  document.getElementById("today").setAttribute("aria-pressed",state.seed===todaySeed());
   const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"")
     +(state.noPorts?"&np=1":"")+(state.allRes?"&a5=1":"");
   const hash=`#s=${state.seed}&p=${state.players}${mp}`;
@@ -1180,6 +1189,7 @@ document.getElementById("map").addEventListener("click",e=>{
   state.map=b.dataset.map; state.board=null; generate(true);
 });
 document.getElementById("newBoard").onclick=()=>{state.seed=newSeed();state.board=null;generate(true,"push")};
+document.getElementById("today").onclick=()=>{state.seed=todaySeed();state.board=null;generate(true,"push")};
 document.getElementById("reroll").onclick=()=>generate(false);
 document.getElementById("noPorts").onclick=e=>{
   state.noPorts=!state.noPorts;
