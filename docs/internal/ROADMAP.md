@@ -73,10 +73,14 @@ Nothing here is code. Order is by what unblocks the most.
    sign-in, no separate verification); the import carried no sitemap because Google had not read it
    yet, so it was submitted to Bing by hand the same day, status "Processing". **2.3 done.**
 4. **Research (deep-research, filed in the vault as `knowledge/pages/board-game-tools-monetisation.md`).**
-   Question: what do users of free board-game tools actually pay or donate for, and what did tools
-   that tried to charge get wrong. Sources: r/Catan, r/boardgames, BGG forums, Ko-fi and Buy Me a
-   Coffee pages of comparable tools, Colonist.io's model. Must include the counter-examples. Output:
-   a ranked list of candidate features with evidence, feeding Step 3.
+   Widened 2026-10-27 on the founder's call: the bottom line is traffic, so the question is what
+   Harbormaster can become, not only what people pay for. Four parts: (a) which communities serious
+   Catan and Eurogame players actually use, found by the research itself, with their self-promotion
+   rules and what tool posts got traction there; (b) which features of free board-game tools earned
+   real traffic or virality, and which fit a static no-account page; (c) what users of such tools
+   actually pay or tip for, with amounts, plus the counter-examples (failed paywalls, trademark
+   takedowns); (d) three to five creative product directions ranked by expected traffic, fit, build
+   cost and legal risk. Launched 2026-10-27 from the vault session. Feeds Step 3.
 5. **Post.** One r/Catan post and one BGG thread after Step 1 ships (fair settlements + Seafarers +
    phone install). Copy is the founder's.
 
