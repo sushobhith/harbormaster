@@ -7,16 +7,16 @@ in `DECISIONS.md`; test ids in `TEST_PLAN.md`. Architecture is `CLAUDE.md` at th
 The project is a weekend side project and a Koduo dogfood repo. It does not compete with Koduo for
 weekday time (vault `ACTION_BOARD.md`).
 
-## Current State (Last Updated: 2026-10-27)
+## Current State (Last Updated: 2026-10-28)
 
 <!-- Now = the single current focus. Per-step detail lives in that step's Status line, never here. -->
 
-- **Now:** **Step 3b — Today's board** (brief in the vault, `founder-os/tasks/harbormaster/2026-10-27-step-3b-todays-board.md`;
-  founder chose to build it before posting the Step 1 issues so the five Koduo tasks are posted once
-  against final markup). Step 3a is **live** since 2026-10-27 evening: deployed and pushed by the founder,
-  `scripts/verify_live.sh` 10/10 including the new font check, TP-30 re-run green, live page serves both
-  fonts from its own host with zero Google requests. Still open from Step 2: pay @bbyy21's $25 credit and
-  the Reddit reply.
+- **Now:** **Step 1 — post the five Koduo issues** (drafts in the Step 1 table, updated 2026-10-28 against
+  the final markup: 1.1 fonts + both theme colours, 1.2 `board_today` + `theme_toggle`, 1.4 placement, 1.5 sea
+  ring + `#today`). First the founder deploys 3b by hand: `vercel deploy --prod --yes`, the alias step,
+  `scripts/verify_live.sh`, then tap Today's board on two phones (same UTC day ⇒ same board). Step 3b is
+  **built 2026-10-28, on local `main`, not pushed, not deployed** (status under Step 3). Still open from
+  Step 2: pay @bbyy21's $25 credit and the Reddit reply.
 - **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
   Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
 - **Baseline numbers (D-015, Vercel Analytics, 30 days 2026-09-26 to 2026-10-26, read 2026-10-26
@@ -122,7 +122,14 @@ Nothing here is code. Order is by what unblocks the most.
   segments, legend contrast; `c811c79` og board fit; `8714e90` centred fairness line, no hairlines on the
   secondary row, the founder's two picks). `npm test` green: golden identical (TP-34), ui 176/176, tide 76
   (TP-35..38), assets 14 (TP-39/40), balance and page clean. **Deployed and pushed by the founder 2026-10-27 evening**, verify_live 10/10, TP-30 green,
-  WhatsApp preview checked by the founder. 3b brief written the same evening, build not started.
+  WhatsApp preview checked by the founder. **3b built 2026-10-28** (00:20–01:05 IST, attended /orchestrate): D-030..D-034 written and committed first
+  (`9792f49`, `b7a6376`; six copy and scope calls answered one at a time, D-034; tile palette shown live-vs-proposed
+  at 390px before the build), then two Opus worktrees: Piece 1 `index.html` + `test_ui` + `test_tide` + og pair
+  (`048085a` Today's board, `97dd03f` tiles, 9 min, landed as returned) and Piece 2 CI + README + CONTRIBUTING +
+  `test_assets` + demo script + Step 1 drafts (`6fb16e2`..`e73f94e`, 5 min, one wording fix `66c508b`); demo gif
+  re-recorded from the landed page `a9a5368`. `npm test` green: golden identical (TP-43), ui 202/202, tide 80
+  (TP-47), assets 27 (TP-45/46), page 11, balance clean; TP-41..47 all proven red first. `sitemap.xml` lastmod is
+  2026-10-27 (UTC build date; TP-32 forbids a future date). **Not deployed, not pushed: the founder's hands.**
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip

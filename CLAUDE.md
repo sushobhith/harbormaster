@@ -18,9 +18,6 @@ mode added 2026-07-09 (requested on Reddit by a 5-player Seafarers group).
   Step 2 makes the OLD host serve the redirect from the new deploy; skipping it leaves old shared
   links on a stale deploy that does not redirect. Verify after: `scripts/verify_live.sh` (D-013).
   No build step; `index.html` is the whole app.
-- **Also published** as a Claude artifact: https://claude.ai/code/artifact/eb2f82e4-a8ef-45b6-a984-265ff21a98db
-  (note: the Artifact tool wants the file WITHOUT `<!doctype>/<html>/<head>/<body>` wrapper —
-  strip the wrapper before republishing there; Vercel wants it WITH).
 
 ## Roadmap and decisions (added 2026-10-26)
 
@@ -52,6 +49,10 @@ One `<script>` IIFE, sections in order:
 1. **RNG** — seeded (xmur3 + mulberry32). Same `#s=<seed>&p=<players>` URL ⇒ identical setup.
    Seed namespace is `seed|players` for classic and `seed|players|sea` for Seafarers — the
    `|sea` suffix is appended ONLY for sea maps so pre-Seafarers shared links keep their boards.
+   **Today's board** (D-031, 2026-10-28): `todaySeed()` returns `today-YYYY-MM-DD` from the **UTC** date;
+   it is an ordinary seed on the same hash and namespaces (one board a day for the whole world, and a
+   shared `today-` link keeps working tomorrow). `#today` sets it; its `aria-pressed` is derived in
+   `generate()` from `state.seed===todaySeed()`, never toggled. No scoring, no server (D-019).
 2. **Data (`SETUPS`)** — `base` (19 hex, rows 3-4-5-4-3) and `ext` (30 hex, rows 3-4-5-6-5-4-3),
    official resource counts and token sets, and `portSeq` (see Ports below). Plus Seafarers
    `sea3`/`sea4`/`sea56` (see Seafarers section).
@@ -150,8 +151,10 @@ both number-token sets (main/island), harbor counts all match exactly.
 Night and day pair, few boxes, editorial type. Tokens live in the three `:root` blocks at the top of the
 stylesheet (Day on bare `:root`, Night under `prefers-color-scheme: dark` guarded by
 `:not([data-theme="light"])` and under `[data-theme="dark"]`); the exact values and the reasons are
-D-020 (palette) and D-026 (board). `#theme` toggles and stores `localStorage["hm-theme"]` (D-023); print
-forces Day. Layout: D-021 (phone order) and D-022 (desktop, `min-width: 900px`). Fonts are self-hosted in
+D-020 (palette) and D-026 (board). **Tile colours are D-030 (2026-10-28)**: conventional Catan hues with blue water, one hue per tile,
+in the same four blocks (three `:root` + print); TP-47 guards water hue 195–235° and pairwise ΔE ≥ 20
+(wheat/gold ≥ 15). D-030 supersedes the tile lines of D-020/D-026 only. `#theme` toggles and stores
+`localStorage["hm-theme"]` (D-023); print forces Day. Layout: D-021 (phone order) and D-022 (desktop, `min-width: 900px`). Fonts are self-hosted in
 `fonts/` (Instrument Serif for the wordmark, Manrope variable for everything else, OFL texts beside them,
 D-025) — never add a Google Fonts link; `test_assets` fails on one. The link preview is rendered from the
 real page: `node scripts/render-og.mjs "$PWD"` writes `docs/assets/board-day.png` and `og-image.png`
@@ -167,12 +170,15 @@ their call.
 node test/test_golden.mjs "$PWD"             # classic outputs byte-identical to the frozen baseline
 node test/test_balance.mjs "$PWD" 100        # from repo root; needs playwright importable
 node test/test_page.mjs "$PWD"               # render/theme/constraint smoke test
-node test/test_ui.mjs "$PWD"                 # toolbar, hash, copy link, history (176 assertions)
-node test/test_tide.mjs "$PWD"               # TP-35..38: theme toggle, ids, 390px layout, contrast
-node test/test_assets.mjs "$PWD"             # TP-39/40: no Google Fonts, fonts load, og-image 1200x630
+node test/test_ui.mjs "$PWD"                 # toolbar, hash, copy link, history, Today's board TP-41..44 (202 assertions)
+node test/test_tide.mjs "$PWD"               # TP-35..38 theme, ids, 390px layout, contrast; TP-47 tile hue/ΔE
+node test/test_assets.mjs "$PWD"             # TP-39/40 fonts + og; TP-45 CI runs every suite; TP-46 previews current
 ```
 
-`npm test` runs all six (TEST_PLAN TP-34..40 for the Step 3a rows). `test_tide` and `test_assets`
+`npm test` runs all six, and so does CI (`.github/workflows/ci.yml`, all six since 2026-10-28; TP-45
+fails if a `test:*` script is missing from it). TP-46 goes red locally when `docs/assets/board-day.png`
+or `demo.gif` is older than `index.html`: re-run `scripts/render-og.mjs "$PWD"` and
+`scripts/make-demo-gif.mjs` after any visible change (both skip their mtime half under `CI`). `test_tide` and `test_assets`
 open `index.html` from `file://` and serve `/fonts/*` through a Playwright route, so they need the
 `fonts/` directory present.
 
@@ -224,6 +230,10 @@ submission, Bing import, Reddit/BGG backlinks.
   stat on Board only, demo GIF refresh with mixed maps/player counts.)
 
 ## Toolbar extras (2026-07-09)
+
+- **Today's board** (`#today`, added 2026-10-28, D-031/D-034): secondary row, between `#reroll` and
+  `#copy`; the row is a 2×2 grid, three columns in Board only (`body[data-mode]` is set in `generate()`).
+  Copy strings (button, cheat-sheet bullet, FAQ + JSON-LD) are D-034.
 
 - **No port starts** (`#noPorts`, hash `&np=1`, fair mode only): filters port vertices out of
   settlement candidates in `drawSettlements` (6th arg). Falls back to allowing ports if a
