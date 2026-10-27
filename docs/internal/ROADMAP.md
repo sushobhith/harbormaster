@@ -15,7 +15,7 @@ weekday time (vault `ACTION_BOARD.md`).
   the final markup: 1.1 fonts + both theme colours, 1.2 `board_today` + `theme_toggle`, 1.4 placement, 1.5 sea
   ring + `#today`). First the founder deploys 3b by hand: `vercel deploy --prod --yes`, the alias step,
   `scripts/verify_live.sh`, then tap Today's board on two phones (same UTC day ⇒ same board). Step 3b is
-  **built 2026-10-28, on local `main`, not pushed, not deployed** (status under Step 3). Still open from
+  **live since 2026-10-28 early morning** (deployed and pushed by the founder; status under Step 3). Still open from
   Step 2: pay @bbyy21's $25 credit and the Reddit reply.
 - **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
   Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
@@ -129,7 +129,9 @@ Nothing here is code. Order is by what unblocks the most.
   `test_assets` + demo script + Step 1 drafts (`6fb16e2`..`e73f94e`, 5 min, one wording fix `66c508b`); demo gif
   re-recorded from the landed page `a9a5368`. `npm test` green: golden identical (TP-43), ui 202/202, tide 80
   (TP-47), assets 27 (TP-45/46), page 11, balance clean; TP-41..47 all proven red first. `sitemap.xml` lastmod is
-  2026-10-27 (UTC build date; TP-32 forbids a future date). **Not deployed, not pushed: the founder's hands.**
+  2026-10-27 (UTC build date; TP-32 forbids a future date). **Deployed and pushed by the founder 2026-10-28 ~01:50 IST**: live page carries `#today` and the D-030
+  tokens, og-image 200, old host 308 to the apex, first CI run with all six suites green (1m39s). The
+  sitemap lastmod bump (`a8e371b`) still needs its push and redeploy.
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip
