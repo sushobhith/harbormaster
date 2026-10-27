@@ -592,3 +592,22 @@ reversal is a new entry that names the old one. Founder calls are marked.
   two new suites (one job, one green).
 - **Affects:** `.github/workflows/ci.yml`, `README.md`, `CONTRIBUTING.md`, `docs/assets/`,
   `scripts/make-demo-gif.mjs`, `docs/internal/ROADMAP.md` Step 1 table, `CLAUDE.md`; TP-45, TP-46.
+
+## D-034 — Step 3b copy: the customer-visible strings, and the artifact copy (2026-10-28, founder)
+- **Decision:** (1) `#today` label: `Today's board`. (2) Nothing beside the seed label while on
+  today's board: the seed text already carries the date and the pressed button shows it, so the
+  `.seedtag` span of D-031 is not built. (3) Cheat sheet, last bullet of the first list:
+  `**Today's board** = the same board for everyone, every day, for your player count. Share the link.`
+  (4) Footer FAQ, fifth entry after "Can I share a board?", and the same pair in the FAQPage JSON-LD:
+  Q `What is Today's board?` A `One shared board a day. Everyone who taps Today's board on the same
+  day, with the same player count and map, gets the same board and the same fair starting
+  settlements. Copy the link to play the same board as your friends.` (5) README feature table: the
+  "Themed" row becomes `**Night and day** — follows your phone; one tap to switch, remembered.` and a
+  new row after "Shareable": `**Today's board** — one shared board a day for your player count; send
+  the link.` (6) The Claude-artifact copy of the app: the line in `CLAUDE.md` is deleted; the site is
+  the canonical copy and nothing is republished. `<title>` and meta description unchanged. No other
+  visible wording changes.
+- **Why:** D-005: copy is the founder's. Asked and answered one at a time 2026-10-28.
+- **Alternatives rejected:** per call: "Today", "Daily board"; "today" / "shared" beside the seed; the
+  shorter cheat-sheet and FAQ answers; keeping "Themed" as the row name; republishing the artifact.
+- **Affects:** `index.html` secondary row, cheat sheet, FAQ and JSON-LD; `README.md`; `CLAUDE.md`.
