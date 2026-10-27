@@ -24,13 +24,14 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npm run test:balance && npm run test:page && npm run test:golden && npm run test:ui && npm run test:tide",
+    "test": "npm run test:balance && npm run test:page && npm run test:golden && npm run test:ui && npm run test:tide && npm run test:assets",
     "test:quick": "node test/test_balance.mjs \"$PWD\" 20",
     "test:balance": "node test/test_balance.mjs \"$PWD\" 100",
     "test:page": "node test/test_page.mjs \"$PWD\"",
     "test:golden": "node test/test_golden.mjs \"$PWD\"",
     "test:ui": "node test/test_ui.mjs \"$PWD\"",
-    "test:tide": "node test/test_tide.mjs \"$PWD\""
+    "test:tide": "node test/test_tide.mjs \"$PWD\"",
+    "test:assets": "node test/test_assets.mjs \"$PWD\""
   },
   "devDependencies": {
     "gifenc": "^1.0.3",
