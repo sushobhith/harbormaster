@@ -106,10 +106,9 @@ Nothing here is code. Order is by what unblocks the most.
 ## Step 3 — Build what the research says people value
 - **Why:** Both previous features people asked for (board-only mode, Seafarers) came from r/Catan.
   Guessing is how hobby projects stay hobby projects.
-- **Scope:** decided after Step 2.4 and two weeks of 1.2 data. Candidates on the table today, none
-  committed: Cities & Knights setup; a "same board on every table" print sheet for clubs and
-  tournaments; saved groups and game history (which would need accounts and a backend, D-007).
-- **Status:** gated.
+- **Scope (D-018, 2026-10-27):** the daily board. One date-seeded board a day for everyone, place an
+  opening, share a result card. Phasing and scoring decided in the Step 3 brief.
+- **Status:** scope decided 2026-10-27; brief not written.
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip

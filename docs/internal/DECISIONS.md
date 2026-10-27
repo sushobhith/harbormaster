@@ -243,3 +243,26 @@ reversal is a new entry that names the old one. Founder calls are marked.
   less explicit than naming the root); a client-side fallback redirect in `index.html` (D-011's
   reasons still apply).
 - **Affects:** `vercel.json`; TP-30 stays the proof; `scripts/verify_live.sh` already checks `/`.
+
+## D-017 — Tip link ships without asking CATAN; risk accepted (2026-10-27, founder)
+- **Decision:** Step 1.4 ships as D-004 describes. No email to ip@catan.com. If CATAN objects, the
+  link comes down then.
+- **Why:** CATAN's IP guidelines (catan.com, read 2026-10-27) call indirect income such as ads
+  "commercial exploitation" and do not name tips. Harbormaster uses no CATAN artwork, and asking
+  invites a slow answer or a no for a link expected to earn under one tip a month (D-004). Removing a
+  link is a one-line change.
+- **Alternatives rejected:** email ip@catan.com first (delay for a marginal signal); hold until the app
+  covers several games (ties a small signal to a large build).
+- **Affects:** ROADMAP Step 1.4 (unchanged); evidence in vault `knowledge/pages/board-game-tools-monetisation.md`.
+
+## D-018 — Step 3 is the daily board (2026-10-27, founder)
+- **Decision:** Step 3 builds a daily board: one board per calendar day, the same for every visitor,
+  seeded from the date, on which the player places an opening and gets a shareable result card.
+  The phasing and scoring method are decided in the Step 3 brief, not here.
+- **Why:** The Step 2.4 research found a fair-board generator is table stakes (CatanBoard already ships
+  a 0-100 balance score), and that the strongest traffic pattern in adjacent games is a single shared
+  daily challenge with a share card (Chess.com reports 1M+ daily solvers, self-reported). A date seed
+  needs no backend, so it fits D-007.
+- **Alternatives rejected for now:** SEO calculator pages (CatanBoard owns them); multi-game setup (no
+  demand evidence); tournament packs (no evidence leagues want them); Cities & Knights setup.
+- **Affects:** ROADMAP Step 3 scope.
