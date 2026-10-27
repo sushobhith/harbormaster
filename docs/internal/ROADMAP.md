@@ -88,11 +88,12 @@ Nothing here is code. Order is by what unblocks the most.
   `harbormaster.vercel.app`. Proof: `scripts/verify_live.sh` 9/9 and TP-30 6/6 against live at
   about 19:40 IST (old-host `#s=abc&p=4` lands on the same board on the new host). Repo side:
   D-011..D-016, every self-URL on the new host, og-image re-rendered, TP-31/32/33 proven red first.
-  Commits `46d3913`..`db86734` plus this one are local and not yet pushed. 2.1 sweep **held on the founder's
-  instruction ("do not reply to anyone yet")**: the #6/#7/#8 close text and the README swap are
-  approved verbatim; #10 is to be closed; the #14 reply (needs the @bbyy21 payout link) and the
-  Reddit reply are not yet approved; the #9 bot-comment edit and a PR #2 thank-you were declined.
-  2.3 Search Console / Bing not started. 2.4 research not started (separate run). 2.5 after Step 1.
+  Commits `46d3913`..`db86734` plus this one are local and not yet pushed. 2.1 sweep, part done
+  2026-10-27: PRs #6/#7/#8 closed with the approved text (deleted #4, no server endpoint on a static
+  page); #10 closed with thanks. Zero open PRs. Still open: #12/#13/#14 (proof-of-payment questions;
+  answered from Koduo once @bbyy21's payout exists, not from here), the Reddit reply (founder posts
+  it), the #9 bot-comment edit (declined). 2.3 done 2026-10-27 (see above). 2.4 research not started
+  (separate run). 2.5 after Step 1.
 
 ## Step 3 — Build what the research says people value
 - **Why:** Both previous features people asked for (board-only mode, Seafarers) came from r/Catan.
