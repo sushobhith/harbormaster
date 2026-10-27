@@ -145,6 +145,8 @@ for (const scheme of ['dark', 'light']) {
     add('fairness line', document.querySelector('#fairCard .fl') || document.getElementById('fairCard'));
     add('.player .head b', document.querySelector('.player .head b'));
     add('#seedLabel', document.getElementById('seedLabel'));
+    add('legend 6/8 pill', document.querySelector('.legend .tokpill'));
+    add('pressed segment', document.querySelector('.seg button[aria-pressed="true"]'));
     const nums = [...document.querySelectorAll('#board text')].filter(t => t.getAttribute('font-size') === '15');
     for (const [name, t] of [['token number (plain)', nums.find(t => !['6', '8'].includes(t.textContent))],
                               ['token number (6/8)', nums.find(t => ['6', '8'].includes(t.textContent))]]) {
