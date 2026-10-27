@@ -80,7 +80,11 @@ Nothing here is code. Order is by what unblocks the most.
    real traffic or virality, and which fit a static no-account page; (c) what users of such tools
    actually pay or tip for, with amounts, plus the counter-examples (failed paywalls, trademark
    takedowns); (d) three to five creative product directions ranked by expected traffic, fit, build
-   cost and legal risk. Launched 2026-10-27 from the vault session. Feeds Step 3.
+   cost and legal risk. **Done 2026-10-27**, filed at vault `knowledge/pages/board-game-tools-monetisation.md`.
+   Headline: CatanBoard already ships a 0-100 balance score, so "fair" is table stakes; the strongest
+   traffic pattern is a date-seeded daily board with a share card (static fit); CATAN's IP policy
+   calls even indirect income commercial exploitation, which puts the tip link (D-004, Step 1.4)
+   in question until the founder decides. Feeds Step 3.
 5. **Post.** One r/Catan post and one BGG thread after Step 1 ships (fair settlements + Seafarers +
    phone install). Copy is the founder's.
 
