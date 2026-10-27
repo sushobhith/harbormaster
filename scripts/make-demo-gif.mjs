@@ -6,11 +6,13 @@ import gifenc from 'gifenc';
 const { GIFEncoder, quantize, applyPalette } = gifenc;
 import fs from 'fs';
 
-const HOME = process.env.HOME;
-const URL = 'file://' + HOME + '/Documents/projects/harbormaster/index.html';
+// Record the checkout this script lives in (a worktree records itself, not the main checkout).
+const URL = new globalThis.URL('../index.html', import.meta.url).href;
+const OUT = new globalThis.URL('../docs/assets/demo.gif', import.meta.url).pathname;
 // mix of player counts and maps so the GIF shows the whole product
 const BOARDS = [
   { seed: 'island', hash: 'p=4' },
+  { seed: 'today-2026-10-28', hash: 'p=4' },
   { seed: 'harbor', hash: 'p=6' },
   { seed: 'delta',  hash: 'p=4&map=sea' },
   { seed: 'reef',   hash: 'p=6&map=sea' },
@@ -60,5 +62,5 @@ for (const f of frames) {
   gif.writeFrame(index, png.width, png.height, { palette, delay: f.delay, repeat: 0 });
 }
 gif.finish();
-fs.writeFileSync('docs/assets/demo.gif', Buffer.from(gif.bytes()));
-console.log('wrote docs/assets/demo.gif —', frames.length, 'frames,', (fs.statSync('docs/assets/demo.gif').size / 1e6).toFixed(2), 'MB');
+fs.writeFileSync(OUT, Buffer.from(gif.bytes()));
+console.log('wrote', OUT, '—', frames.length, 'frames,', (fs.statSync(OUT).size / 1e6).toFixed(2), 'MB');
