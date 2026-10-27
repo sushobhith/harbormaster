@@ -5,6 +5,7 @@ name: CI
 # shared links) and test_ui.mjs (143 DOM assertions) had never run anywhere.
 #
 # A check nobody runs is not a check.
+# As of 2026-10-28 all six suites run (TP-45 keeps it so); test_assets skips its mtime half under CI.
 
 on:
   push:
@@ -42,3 +43,9 @@ jobs:
 
       - name: UI interaction suite
         run: npm run test:ui
+
+      - name: Tide theme, ids, layout, contrast
+        run: npm run test:tide
+
+      - name: Self-hosted fonts and link preview
+        run: npm run test:assets

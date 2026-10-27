@@ -88,4 +88,16 @@ const FAMILIES = ['Manrope', 'Instrument Serif'];
   }
 }
 
+// TP-45 (D-033): every test:* script except test:quick runs in CI
+{
+  const scripts = Object.keys(JSON.parse(readFileSync(`${dir}/package.json`, 'utf8')).scripts || {})
+    .filter(k => /^test:/.test(k) && k !== 'test:quick');
+  const ci = readFileSync(`${dir}/.github/workflows/ci.yml`, 'utf8');
+  check(scripts.length > 0, `TP-45 package.json has test:* scripts besides test:quick (${scripts.join(', ')})`);
+  for (const name of scripts) {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    check(new RegExp(`^\\s*run:\\s*npm run ${esc}\\s*$`, 'm').test(ci), `TP-45 .github/workflows/ci.yml has a "run: npm run ${name}" step`);
+  }
+}
+
 await browser.close();
