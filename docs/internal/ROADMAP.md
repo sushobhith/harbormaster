@@ -68,8 +68,8 @@ Nothing here is code. Order is by what unblocks the most.
    `vercel.app` stays live and becomes a redirect (D-011, D-012).
 3. **Search.** Google Search Console: Domain property `harbormaster.fyi` verified 2026-10-27 by TXT
    record at Porkbun (do not delete that record), under the padfootsush Google account; sitemap
-   submitted the same day, first read said "Couldn't fetch" (normal for a new property; recheck
-   after 2026-10-28). Bing Webmaster Tools: site imported from Search Console 2026-10-27 (Google
+   submitted the same day, first read said "Couldn't fetch"; rechecked 2026-10-28:
+   "Success", last read 2026-10-27, 1 page discovered. Bing Webmaster Tools: site imported from Search Console 2026-10-27 (Google
    sign-in, no separate verification); the import carried no sitemap because Google had not read it
    yet, so it was submitted to Bing by hand the same day, status "Processing". **2.3 done.**
 4. **Research (deep-research, filed in the vault as `knowledge/pages/board-game-tools-monetisation.md`).**
