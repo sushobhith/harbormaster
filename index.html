@@ -10,8 +10,8 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="google-site-verification" content="fVmXoXK8LKsyB5JT6KQIy_UPfsYqBhS21jA5Tu-6j4Q">
 <meta name="author" content="Sushobhith Sharma">
-<meta name="theme-color" content="#c94f38">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
+<meta name="theme-color" content="#f2eee5">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230d1311'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23c58a5c' stroke-width='3.5'/></svg>">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Harbormaster">
@@ -62,40 +62,45 @@
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 <style>
+  @font-face{font-family:"Instrument Serif";font-style:normal;font-weight:400;font-display:swap;
+    src:url(/fonts/instrument-serif-latin.woff2) format("woff2");
+    unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+  @font-face{font-family:"Manrope";font-style:normal;font-weight:200 800;font-display:swap;
+    src:url(/fonts/manrope-latin.woff2) format("woff2");
+    unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+
+  /* Tide tokens (D-020, D-026). Day on bare :root; Night under the media query and data-theme. */
   :root{
-    --bg:#eef2f0; --sea:#cfe0e2; --panel:#ffffff; --panel2:#f4f6f4;
-    --ink:#22303a; --muted:#5d6d76; --line:#d3dcda;
-    --accent:#c94f38; --token:#f6ecd4; --token-ink:#2c241c;
-    --good:#3e7a45; --warn:#b5852c;
-    --wood:#3e7a45; --brick:#b5643c; --wheat:#d9a83c; --sheep:#8fbf6a; --ore:#7d8494; --desert:#cdb98a;
-    --gold:#ecc94b; --seahex:#a8c8d8;
-    --shadow:0 1px 3px rgba(20,40,45,.12);
+    color-scheme:light;
+    --bg:#f2eee5; --ink:#16201c; --muted:#56605b; --line:#ddd5c6;
+    --accent:#9a5a30; --on-accent:#fbf8f1;
+    --wood:#5e8566; --sheep:#9cb58a; --wheat:#d2b47a; --brick:#b07560; --ore:#8b9294;
+    --desert:#c9bca2; --seahex:#a9c4bd; --gold:#d8b253;
+    --tok:#fffdf8; --tink:#16201c; --ring:#9a8f7c; --edge:#f2eee5; --port:#9a5a30;
+    --card:#f6f2ea; --hot:#a8352b;
+    --p1:#c8432f; --p2:#2f62b0; --p3:#ffffff; --p4:#e08a2c; --p5:#3f8a4a; --p6:#8a5a3b;
   }
   @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#16232b; --sea:#0f1a20; --panel:#1e2e37; --panel2:#243541;
-      --ink:#e8e4d8; --muted:#93a4ab; --line:#31454f;
-      --token:#efe3c4; --token-ink:#2c241c;
-      --good:#7fbf85; --warn:#d9b25e;
-      --gold:#d9b83e; --seahex:#1d3a4a;
-      --shadow:0 1px 4px rgba(0,0,0,.4);
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --bg:#0d1311; --ink:#ece6d8; --muted:#a7a294; --line:#27312d;
+      --accent:#c58a5c; --on-accent:#0d1311;
+      --wood:#4b6b55; --sheep:#7f9970; --wheat:#bfa06a; --brick:#97604c; --ore:#6c7376;
+      --desert:#9b8f78; --seahex:#1f4540; --gold:#c9a24a;
+      --tok:#ece6d8; --tink:#1a1f1c; --ring:#a7a294; --edge:#0d1311; --port:#c58a5c;
+      --card:#111815; --hot:#a8352b;
+      --p1:#d4553f; --p2:#4a83d1; --p3:#ece6d8; --p4:#e39545; --p5:#5a9e63; --p6:#9a6a45;
     }
   }
   :root[data-theme="dark"]{
-    --bg:#16232b; --sea:#0f1a20; --panel:#1e2e37; --panel2:#243541;
-    --ink:#e8e4d8; --muted:#93a4ab; --line:#31454f;
-    --token:#efe3c4; --token-ink:#2c241c;
-    --good:#7fbf85; --warn:#d9b25e;
-    --gold:#d9b83e; --seahex:#1d3a4a;
-    --shadow:0 1px 4px rgba(0,0,0,.4);
-  }
-  :root[data-theme="light"]{
-    --bg:#eef2f0; --sea:#cfe0e2; --panel:#ffffff; --panel2:#f4f6f4;
-    --ink:#22303a; --muted:#5d6d76; --line:#d3dcda;
-    --token:#f6ecd4; --token-ink:#2c241c;
-    --good:#3e7a45; --warn:#b5852c;
-    --gold:#ecc94b; --seahex:#a8c8d8;
-    --shadow:0 1px 3px rgba(20,40,45,.12);
+    color-scheme:dark;
+    --bg:#0d1311; --ink:#ece6d8; --muted:#a7a294; --line:#27312d;
+    --accent:#c58a5c; --on-accent:#0d1311;
+    --wood:#4b6b55; --sheep:#7f9970; --wheat:#bfa06a; --brick:#97604c; --ore:#6c7376;
+    --desert:#9b8f78; --seahex:#1f4540; --gold:#c9a24a;
+    --tok:#ece6d8; --tink:#1a1f1c; --ring:#a7a294; --edge:#0d1311; --port:#c58a5c;
+    --card:#111815; --hot:#a8352b;
+    --p1:#d4553f; --p2:#4a83d1; --p3:#ece6d8; --p4:#e39545; --p5:#5a9e63; --p6:#9a6a45;
   }
   .sea-only{display:none}
   body[data-map="sea"] span.sea-only,body[data-map="sea"] b.sea-only{display:inline}
@@ -104,155 +109,181 @@
   body[data-map="sea"] .classic-only{display:none}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;}
-  .display{font-family:"Iowan Old Style","Palatino Nova",Palatino,Georgia,serif;}
+    font:15px/1.5 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-text-size-adjust:100%}
+  .display{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+  .num,.seedbox,.chip,.player .pips{font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit}
 
-  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem 1rem;
-    padding:1.1rem 1.4rem .4rem;}
-  header h1{margin:0;font-size:1.55rem;font-weight:600;letter-spacing:.01em}
-  header p{margin:0;color:var(--muted);font-size:.9rem}
-  .gh{margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;
-    align-self:center;text-decoration:none;color:var(--ink);font-size:.85rem;
-    font-weight:600;border:1px solid var(--line);border-radius:8px;
-    padding:.38rem .7rem;background:var(--panel);box-shadow:var(--shadow)}
-  .gh:hover{border-color:var(--accent);color:var(--accent)}
-  .gh:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .page{max-width:1120px;margin:0 auto;padding:.9rem 16px 2rem}
 
-  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;
-    padding:.6rem 1.4rem 1rem;}
-  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
-  .seg button{border:0;background:transparent;color:var(--muted);padding:.42rem .8rem;
-    font:inherit;font-weight:600;cursor:pointer}
-  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-  .seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);
-    padding:.42rem .9rem;border-radius:8px;font:inherit;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  header{display:flex;align-items:center;gap:1rem;padding-bottom:.75rem}
+  header .brand{min-width:0}
+  header h1{margin:0;font-size:2.15rem;line-height:1;letter-spacing:.005em}
+  header p{margin:.3rem 0 0;color:var(--muted);font-size:.9rem}
+  #theme{margin-left:auto;flex:none;width:44px;height:44px;border-radius:50%;
+    border:1px solid var(--line);background:transparent;color:var(--ink);
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+  #theme svg{width:20px;height:20px}
+
+  /* phone: one column; the two column wrappers dissolve so every block can be ordered */
+  main{display:flex;flex-direction:column;gap:.9rem}
+  .colL,.colR{display:contents}
+  .row-mp{order:1}
+  .boardwrap{order:2}
+  #fairCard{order:3}
+  .row-new{order:4}
+  .row-sec{order:5}
+  #playerCards{order:6}
+  #options{order:7}
+  .legend{order:8}
+  #methodCard{order:9}
+  footer{order:10}
+
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}
+  .row-mp .seg#map{flex:1 1 auto}
+  .seg{display:flex;gap:2px;border-radius:99px}
+  .seg button{flex:1 1 auto;border:0;background:transparent;color:var(--muted);
+    min-height:40px;padding:.4rem .85rem;border-radius:99px;font-weight:600;cursor:pointer;
+    font-variant-numeric:tabular-nums}
+  .seg button[aria-pressed="true"]{background:var(--line);color:var(--ink)}
+  #players button{padding-inline:.7rem;min-width:40px}
+  :is(.seg button,.btn,#theme,summary):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .btn{border:0;background:transparent;color:var(--ink);padding:.5rem .8rem;
+    border-radius:10px;font-weight:600;cursor:pointer;min-height:44px}
+  .btn.primary{background:var(--accent);color:var(--on-accent);width:100%;min-height:54px;
+    font-size:1.02rem;border-radius:12px}
   .btn:active{transform:translateY(1px)}
-  .seedbox{margin-left:auto;color:var(--muted);font-size:.8rem;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  .seedbox b{color:var(--ink);font-weight:600}
+  .row-sec{display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .row-sec .btn{border-radius:0;min-width:0;padding-inline:.3rem;white-space:nowrap}
+  .row-sec .btn+.btn{border-left:1px solid var(--line)}
+  .chipbtn{border:1px solid var(--line);border-radius:99px;min-height:40px;padding:.35rem .85rem;
+    font-weight:600}
+  .chipbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  #options{border-top:1px solid var(--line);padding-top:.9rem}
+  #options .lbl{flex-basis:100%}
+  .seedbox{margin-left:auto;color:var(--muted);font-size:.82rem}
+  .seedbox b{color:var(--ink);font-weight:700}
   .lbl{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
 
-  main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:1rem;padding:0 1.4rem 1.6rem;
-    max-width:1280px}
-  @media (max-width:900px){ main{grid-template-columns:1fr} }
-
-  .boardwrap{background:var(--sea);border:1px solid var(--line);border-radius:14px;
-    padding:.6rem;box-shadow:var(--shadow)}
   .boardwrap svg{display:block;width:100%;height:auto}
+  #board text{font-variant-numeric:tabular-nums}
 
-  aside{display:flex;flex-direction:column;gap:.75rem;min-width:0}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    padding:.8rem .95rem;box-shadow:var(--shadow)}
-  .fair{display:flex;align-items:center;gap:.7rem}
-  .fair .big{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
-  .pill{padding:.15rem .6rem;border-radius:99px;font-size:.75rem;font-weight:700;letter-spacing:.03em}
-  .pill.good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
-  .pill.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
-  .fair small{color:var(--muted);display:block}
+  /* fairness line between two hairlines */
+  .fair{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:.55rem 0;color:var(--muted);font-size:.92rem}
+  .fair .fl{margin:0;color:var(--muted);font-weight:600}
+  .fair .fl .warn{color:var(--ink)}
+  .fair small{display:block;color:var(--muted);font-size:.78rem;margin-top:.15rem}
+  .fair small b{color:var(--ink)}
 
-  .player{display:flex;flex-direction:column;gap:.45rem}
+  .card{min-width:0}
+  #playerCards{display:flex;flex-direction:column}
+  .player{display:flex;flex-direction:column;gap:.4rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+  .player:first-child{border-top:1px solid var(--line)}
   .player .head{display:flex;align-items:center;gap:.55rem}
-  .swatch{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)}
+  .swatch{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px var(--ring)}
   .player .head b{font-size:.95rem}
-  .player .head .pips{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+  .player .head .pips{margin-left:auto;font-weight:700}
   .player .head .pips small{color:var(--muted);font-weight:500}
-  .bar{height:5px;border-radius:3px;background:var(--panel2);overflow:hidden}
-  .bar i{display:block;height:100%;border-radius:3px}
+  .bar{height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:2px}
   .spots{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem}
   .spot{display:flex;align-items:center;gap:.45rem;color:var(--muted);flex-wrap:wrap}
   .spot .hexes{display:flex;gap:.35rem;flex-wrap:wrap}
   .spot .hexes.tgt .chip{opacity:.72}
   .arrow{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
   .coast{font-size:.78rem;color:var(--muted);font-style:italic}
-  .chip{display:inline-flex;align-items:center;gap:.28rem;background:var(--panel2);
-    border:1px solid var(--line);border-radius:6px;padding:.08rem .45rem;
-    font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
-  .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
-  .covers{font-size:.78rem;color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:.28rem;
+    border:1px solid var(--line);border-radius:6px;padding:.05rem .42rem;
+    font-weight:600;color:var(--ink)}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .covers{font-size:.8rem;color:var(--muted)}
   .covers b{color:var(--ink)}
+  .boardnote{padding:.7rem 0;border-bottom:1px solid var(--line)}
+  .boardnote ul{margin:.45rem 0 0;padding-left:1.1rem;display:flex;flex-direction:column;
+    gap:.3rem;font-size:.85rem;color:var(--muted)}
 
-  .boardcol{display:flex;flex-direction:column;gap:.75rem;min-width:0}
-  .legend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem 1rem;
+  .legend{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem .9rem;
     font-size:.8rem;color:var(--muted)}
-  .legend .dot{width:11px;height:11px;margin-right:.15rem;vertical-align:-1px}
+  .legend .dot{width:10px;height:10px;margin-right:.15rem;vertical-align:-1px}
   .legend .ring{display:inline-block;width:11px;height:11px;border-radius:50%;
-    border:3px solid var(--wood);background:var(--token);vertical-align:-1px;margin-right:.15rem}
-  .legend .ring.any{border-color:#8d8065}
-  .method{font-size:.8rem;color:var(--muted)}
+    border:2.5px solid var(--wood);background:var(--tok);vertical-align:-1px;margin-right:.15rem}
+  .legend .ring.any{border-color:var(--port)}
+
+  .fold{border-top:1px solid var(--line);padding:.6rem 0 0}
+  .fold>summary{cursor:pointer;font-weight:700;color:var(--ink);min-height:32px;list-style-position:inside}
+  .method{font-size:.82rem;color:var(--muted)}
   .method b{color:var(--ink)}
   .method ul{margin:.35rem 0 .8rem;padding-left:1.1rem;display:flex;
     flex-direction:column;gap:.28rem}
   .method ul:last-child{margin-bottom:0}
-  footer{padding:0 1.4rem 2rem;color:var(--muted);font-size:.78rem;max-width:70ch}
+  footer{color:var(--muted);font-size:.8rem;max-width:70ch}
+  footer a{color:var(--accent)}
+  footer .fold{margin-top:.8rem}
+
+  /* desktop (D-022): board left, everything else right */
+  @media (min-width:900px){
+    .page{padding:1.4rem 24px 2.5rem}
+    main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:2rem;align-items:start}
+    .colL,.colR{display:flex;flex-direction:column;gap:.9rem;min-width:0}
+    .colL>*,.colR>*{order:0!important}
+  }
   @media (prefers-reduced-motion:no-preference){
     .btn.primary{transition:transform .06s ease}
   }
   @media print{
-    /* force the light palette regardless of theme, keep hex fills */
-    :root,:root[data-theme="dark"],:root[data-theme="light"]{
-      --bg:#fff; --sea:#eef4f6; --panel:#fff; --panel2:#f4f4f4;
-      --ink:#111; --muted:#444; --line:#bbb;
-      --token:#f6ecd4; --token-ink:#222; --shadow:none;
-      --wood:#3e7a45; --brick:#b5643c; --wheat:#d9a83c; --sheep:#8fbf6a;
-      --ore:#7d8494; --desert:#cdb98a; --gold:#ecc94b; --seahex:#cfe3ee;
+    /* force the Day palette regardless of theme, keep hex fills */
+    :root,:root:not([data-theme="light"]),:root[data-theme="dark"],:root[data-theme="light"]{
+      color-scheme:light;
+      --bg:#f2eee5; --ink:#16201c; --muted:#56605b; --line:#ddd5c6;
+      --accent:#9a5a30; --on-accent:#fbf8f1;
+      --wood:#5e8566; --sheep:#9cb58a; --wheat:#d2b47a; --brick:#b07560; --ore:#8b9294;
+      --desert:#c9bca2; --seahex:#a9c4bd; --gold:#d8b253;
+      --tok:#fffdf8; --tink:#16201c; --ring:#9a8f7c; --edge:#f2eee5; --port:#9a5a30;
+      --card:#f6f2ea; --hot:#a8352b;
+      --p1:#c8432f; --p2:#2f62b0; --p3:#ffffff; --p4:#e08a2c; --p5:#3f8a4a; --p6:#8a5a3b;
     }
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .toolbar,.gh,#methodCard,footer{display:none!important}
-    header{padding:.2rem 0 0}
-    main{grid-template-columns:1fr;max-width:100%;padding:0;gap:.5rem}
-    .boardwrap{border:1px solid #ccc;padding:.3rem;break-inside:avoid}
-    aside{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem}
-    aside .fair{grid-column:1/-1}
-    .card{break-inside:avoid;padding:.5rem .6rem}
+    .toolbar,#theme,#methodCard,footer,footer .fold{display:none!important}
+    .page{padding:0;max-width:100%}
+    header{padding-bottom:.3rem}
+    main{display:block}
+    .colL,.colR{display:block}
+    .boardwrap{break-inside:avoid;margin-bottom:.5rem}
+    #playerCards{display:grid;grid-template-columns:repeat(2,1fr);column-gap:1rem}
+    .player{break-inside:avoid}
+    .player:nth-child(2){border-top:1px solid var(--line)}
   }
 </style>
+<script>
+/* apply a remembered theme before first paint (D-023) */
+try{var t=localStorage.getItem("hm-theme");
+  if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch(_){}
+</script>
 </head>
 <body>
 
-
+<div class="page">
 <header>
-  <h1 class="display">Harbormaster</h1>
-  <p>Balanced Catan boards with fair starting settlements, for 3–6 players.</p>
-  <a class="gh" href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener" aria-label="View source code on GitHub">
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-    <span>GitHub</span>
-  </a>
+  <div class="brand">
+    <h1 class="display">Harbormaster</h1>
+    <p>Fair setup for Catan</p>
+  </div>
+  <button id="theme" type="button" aria-label="Switch to night mode" title="Switch to night mode">
+    <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+      stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+    <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+      stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/></svg>
+  </button>
 </header>
 
-<div class="toolbar">
-  <span class="lbl">Map</span>
-  <div class="seg" id="map" role="group" aria-label="Map type">
-    <button data-map="classic" aria-pressed="true">Classic</button>
-    <button data-map="sea">Seafarers</button>
-  </div>
-  <span class="lbl">Players</span>
-  <div class="seg" id="players" role="group" aria-label="Player count">
-    <button data-n="3">3</button><button data-n="4" aria-pressed="true">4</button>
-    <button data-n="5">5</button><button data-n="6">6</button>
-  </div>
-  <span class="lbl">Setup</span>
-  <div class="seg" id="mode" role="group" aria-label="Setup mode">
-    <button data-mode="fair" aria-pressed="true">Fair settlements</button>
-    <button data-mode="board">Board only</button>
-  </div>
-  <button class="btn primary" id="newBoard">New board</button>
-  <button class="btn" id="reroll">Re-draw settlements</button>
-  <button class="btn" id="noPorts" aria-pressed="false"
-    title="Keep starting settlements off ports — pure production starts">No port starts</button>
-  <button class="btn" id="allRes" aria-pressed="false"
-    title="Give every player all five resources across their two settlements (roads fill any gap)">All 5 resources</button>
-  <button class="btn" id="copy">Copy link</button>
-  <button class="btn" id="print">Print</button>
-  <span class="seedbox">seed <b id="seedLabel"></b></span>
-</div>
-
 <main>
-  <div class="boardcol">
+  <div class="colL">
     <div class="boardwrap"><svg id="board" role="img" aria-label="Generated Catan board"></svg></div>
-    <div class="card legend">
+    <div class="legend">
       <span class="lbl">Terrain</span>
       <span><span class="dot" style="background:var(--wood)"></span> Wood · forest</span>
       <span><span class="dot" style="background:var(--brick)"></span> Brick · hills</span>
@@ -266,21 +297,17 @@
       <span><i class="ring any"></i> 3:1 any resource</span>
       <span><i class="ring" style="border-color:var(--wood)"></i> 2:1 · ring colour = its resource</span>
       <span class="lbl">Tokens</span>
-      <span><b style="color:var(--accent)">6 / 8</b> roll most often</span>
+      <span><b style="color:var(--hot)">6 / 8</b> roll most often</span>
     </div>
-  </div>
-  <aside>
-    <div class="card fair" id="fairCard"></div>
-    <div id="playerCards" style="display:flex;flex-direction:column;gap:.75rem"></div>
-    <div class="card method" id="methodCard">
-      <b>Cheat sheet</b>
+    <details class="fold method" id="methodCard">
+      <summary>Cheat sheet</summary>
       <ul>
         <li><b>⌂ row</b> = one settlement. Chips = the hexes it collects from
           (colour = resource, number = dice roll).</li>
         <li><b>Pips</b> = the dots under a number = how often it rolls.
           More pips = more cards. That's your whole score.</li>
         <li><b>road →</b> = point that settlement's free road here.</li>
-        <li><b>⚓</b> = you start on a port. Counts toward your total,
+        <li><b>⚓&#xFE0E;</b> = you start on a port. Counts toward your total,
           so port players get slightly fewer pips. Still even.</li>
         <li><b>±N</b> at the top = best player minus worst player.
           0 or 1 = even game. Above 2 → hit Re-draw.</li>
@@ -311,19 +338,16 @@
         <li>Robber: 4-player starts on the desert; 3-player has no desert — rulebook parks
           it on an island hills hex. Pirate starts on the marked sea hex.</li>
       </ul>
-    </div>
-  </aside>
-</main>
-
+    </details>
 <footer><span class="classic-only">Physical setup: lay tiles row by row as shown, tokens on top, robber on the desert.
 Ports are fixed to match the printed frame (photo-verified, both 4-player and 5-6 player) —
 rotate your frame so the port sequence lines up with the drawn board, then everything matches.</span>
 <span class="sea-only">Physical setup: assemble the Seafarers frame per the "Heading for New Shores" scenario
 diagram, then copy this board — the drawn shape, harbor positions, tile pools, and the two
 number-token sets all follow the official scenario; only the placement is balanced-random.</span>
-Re-draw settlements keeps the board and only re-deals the starting spots and roads.
-Free and open source — <a href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener" style="color:var(--accent)">view the code on GitHub</a>.
-<details style="margin-top:.8rem"><summary style="cursor:pointer;font-weight:600">FAQ</summary>
+Re-draw spots keeps the board and only re-deals the starting settlements and roads.
+Free and open source — <a href="https://github.com/sushobhith/harbormaster" target="_blank" rel="noopener">view the code on GitHub</a>.
+<details class="fold"><summary>FAQ</summary>
 <p><b>How is this different from other Catan board generators?</b> Others balance the board.
 Harbormaster also deals each player two starting settlements, two roads, and a turn order,
 matched so the start-value gap is at most 1–2 pips. Prefer drafting? Board-only mode keeps
@@ -335,7 +359,41 @@ fields, their two separate number-token sets, and harbors on the official scenar
 sees the identical setup, settlements included.</p>
 <p><b>Is it free?</b> Free, no signup, open source. One HTML file, runs entirely in your browser.</p>
 </details></footer>
-
+  </div>
+  <div class="colR">
+    <div class="toolbar row-mp">
+      <div class="seg" id="map" role="group" aria-label="Map type">
+        <button data-map="classic" aria-pressed="true">Classic</button>
+        <button data-map="sea">Seafarers</button>
+      </div>
+      <div class="seg" id="players" role="group" aria-label="Player count">
+        <button data-n="3">3</button><button data-n="4" aria-pressed="true">4</button>
+        <button data-n="5">5</button><button data-n="6">6</button>
+      </div>
+    </div>
+    <div class="card fair" id="fairCard"></div>
+    <div class="toolbar row-new"><button class="btn primary" id="newBoard">New board</button></div>
+    <div class="toolbar row-sec">
+      <button class="btn" id="reroll">Re-draw spots</button>
+      <button class="btn" id="copy">Copy link</button>
+      <button class="btn" id="print">Print</button>
+    </div>
+    <div class="toolbar" id="options">
+      <span class="lbl">Options</span>
+      <div class="seg" id="mode" role="group" aria-label="Setup mode">
+        <button data-mode="fair" aria-pressed="true">Fair settlements</button>
+        <button data-mode="board">Board only</button>
+      </div>
+      <button class="btn chipbtn" id="noPorts" aria-pressed="false"
+        title="Keep starting settlements off ports — pure production starts">No port starts</button>
+      <button class="btn chipbtn" id="allRes" aria-pressed="false"
+        title="Give every player all five resources across their two settlements (roads fill any gap)">All 5 resources</button>
+      <span class="seedbox">seed <b id="seedLabel"></b></span>
+    </div>
+    <div id="playerCards"></div>
+  </div>
+</main>
+</div>
 <script>
 (() => {
 "use strict";
@@ -431,7 +489,7 @@ const SETUPS={
     pirate:null}
 };
 const PIPS={2:1,3:2,4:3,5:4,6:5,8:5,9:4,10:3,11:2,12:1};
-const PLAYERCOLORS=[["Red","#c0392b"],["Blue","#2e6da4"],["White","#e8e6df"],["Orange","#d98032"],["Green","#4c9a52"],["Brown","#8a5a3b"]];
+const PLAYERCOLORS=[["Red","var(--p1)"],["Blue","var(--p2)"],["White","var(--p3)"],["Orange","var(--p4)"],["Green","var(--p5)"],["Brown","var(--p6)"]];
 
 /* ---------- geometry (pointy-top classic, flat-top scenario grids) ---------- */
 const S=52, W=Math.sqrt(3)*S;
@@ -865,32 +923,33 @@ function render(geom,resArr,num,ports,placement,setup){
   for(const h of geom.hexes){
     const r=resArr[h.id];
     el("polygon",{points:h.corners.map(c=>c.join(",")).join(" "),
-      fill:RES[r],stroke:r==="sea"?"rgba(30,25,15,.16)":"rgba(30,25,15,.35)",
-      "stroke-width":2.2,"stroke-linejoin":"round"});
+      fill:RES[r],stroke:"var(--edge)",
+      "stroke-width":2.5,"stroke-linejoin":"round"});
     if(r==="gold"){ // sparkle so gold never reads as wheat
       const s1=el("text",{x:h.x-20,y:h.y-16,"text-anchor":"middle","font-size":13,
-        fill:"rgba(120,90,10,.9)"});s1.textContent="✦";
+        fill:"var(--tink)"});s1.textContent="✦";
       const s2=el("text",{x:h.x+20,y:h.y+22,"text-anchor":"middle","font-size":9,
-        fill:"rgba(120,90,10,.75)"});s2.textContent="✦";
+        fill:"var(--tink)","fill-opacity":.75});s2.textContent="✦";
     }
     if(num[h.id]!=null){
       const n=num[h.id],red=n===6||n===8;
-      el("circle",{cx:h.x,cy:h.y,r:15.5,fill:"var(--token)",
-        stroke:"rgba(30,25,15,.3)","stroke-width":1});
+      el("circle",{cx:h.x,cy:h.y,r:15.5,fill:"var(--tok)",
+        stroke:"var(--ring)","stroke-width":1});
       const t=el("text",{x:h.x,y:h.y+1,"text-anchor":"middle",
         "dominant-baseline":"middle","font-size":15,"font-weight":700,
-        fill:red?"#c0392b":"var(--token-ink)"});
-      t.textContent=n; t.style.fontFamily='"Iowan Old Style",Palatino,Georgia,serif';
+        fill:red?"var(--hot)":"var(--tink)"});
+      t.textContent=n; t.style.fontFamily='Manrope,system-ui,-apple-system,"Segoe UI",sans-serif';
+      t.style.fontVariantNumeric="tabular-nums";
       const pips=PIPS[n];
       for(let p=0;p<pips;p++)
         el("circle",{cx:h.x+(p-(pips-1)/2)*3.6,cy:h.y+9.5,r:1.15,
-          fill:red?"#c0392b":"var(--token-ink)"});
+          fill:red?"var(--hot)":"var(--tink)"});
     } else if(r==="desert"&&!desertDone){ desertDone=true;
       const g=el("g",{transform:`translate(${h.x},${h.y})`});
-      el("circle",{cx:0,cy:0,r:9,fill:"rgba(40,35,28,.75)"},g);
-      el("circle",{cx:0,cy:-9,r:4.5,fill:"rgba(40,35,28,.75)"},g);
+      el("circle",{cx:0,cy:0,r:9,fill:"var(--tink)","fill-opacity":.75},g);
+      el("circle",{cx:0,cy:-9,r:4.5,fill:"var(--tink)","fill-opacity":.75},g);
       const t=el("text",{x:0,y:24,"text-anchor":"middle","font-size":8,
-        fill:"rgba(40,35,28,.8)","font-weight":600},g);
+        fill:"var(--tink)","font-weight":600},g);
       t.textContent="ROBBER";
     }
   }
@@ -899,8 +958,8 @@ function render(geom,resArr,num,ports,placement,setup){
     const hid=geom.cellIndex.get(setup.pirate[0]+","+setup.pirate[1]);
     if(hid!=null){const h=geom.hexes[hid];
       const g=el("g",{transform:`translate(${h.x},${h.y})`});
-      el("path",{d:"M -11 2 L 11 2 L 6 9 L -6 9 Z",fill:"rgba(25,22,18,.85)"},g);
-      el("path",{d:"M 0 2 L 0 -12 L 8 -4 L 1 -4",fill:"rgba(25,22,18,.85)"},g);
+      el("path",{d:"M -11 2 L 11 2 L 6 9 L -6 9 Z",fill:"var(--muted)"},g);
+      el("path",{d:"M 0 2 L 0 -12 L 8 -4 L 1 -4",fill:"var(--muted)"},g);
       const t=el("text",{x:0,y:22,"text-anchor":"middle","font-size":8,
         fill:"var(--muted)","font-weight":600},g);
       t.textContent="PIRATE";
@@ -913,13 +972,13 @@ function render(geom,resArr,num,ports,placement,setup){
     const L=Math.hypot(dx,dy)||1; dx/=L; dy/=L;
     const px=pt.mx+dx*17, py=pt.my+dy*17;
     for(const v of [va,vb])
-      el("line",{x1:v.x,y1:v.y,x2:px,y2:py,stroke:"rgba(60,45,25,.5)",
-        "stroke-width":3,"stroke-linecap":"round"});
-    el("circle",{cx:px,cy:py,r:11,fill:"var(--token)",
-      stroke:pt.type==="any"?"rgba(90,80,60,.85)":RES[pt.type],"stroke-width":3});
+      el("line",{x1:v.x,y1:v.y,x2:px,y2:py,stroke:"var(--port)","stroke-opacity":.55,
+        "stroke-width":2,"stroke-linecap":"round"});
+    el("circle",{cx:px,cy:py,r:11,fill:"var(--tok)",
+      stroke:pt.type==="any"?"var(--port)":RES[pt.type],"stroke-width":2.5});
     const t=el("text",{x:px,y:py+1,"text-anchor":"middle",
       "dominant-baseline":"middle","font-size":8.5,"font-weight":700,
-      fill:"var(--token-ink)"});
+      fill:"var(--tink)"});
     t.textContent=pt.type==="any"?"3:1":"2:1";
   }
   if(!placement)return; // board-only mode: no settlements/roads
@@ -931,7 +990,7 @@ function render(geom,resArr,num,ports,placement,setup){
       const a=geom.verts[spot.vid], b=geom.verts[r.to];
       const x1=a.x+(b.x-a.x)*0.2, y1=a.y+(b.y-a.y)*0.2;
       const x2=a.x+(b.x-a.x)*0.88, y2=a.y+(b.y-a.y)*0.88;
-      el("line",{x1,y1,x2,y2,stroke:"rgba(20,15,10,.6)","stroke-width":7.5,"stroke-linecap":"round"});
+      el("line",{x1,y1,x2,y2,stroke:"var(--edge)","stroke-width":7.5,"stroke-linecap":"round"});
       el("line",{x1,y1,x2,y2,stroke:color,"stroke-width":4.5,"stroke-linecap":"round"});
     }
   });
@@ -942,7 +1001,7 @@ function render(geom,resArr,num,ports,placement,setup){
       const v=geom.verts[spot.vid];
       const g=el("g",{transform:`translate(${v.x},${v.y})`});
       el("path",{d:"M -8 8 L -8 -2 L 0 -9 L 8 -2 L 8 8 Z",fill:color,
-        stroke:"rgba(20,15,10,.55)","stroke-width":1.6,"stroke-linejoin":"round"},g);
+        stroke:"var(--edge)","stroke-width":1.6,"stroke-linejoin":"round"},g);
       const t=el("text",{x:0,y:3.5,"text-anchor":"middle","font-size":9,
         "font-weight":800,fill:pi===2?"#333":"#fff"},g);
       t.textContent=pi+1;
@@ -955,7 +1014,9 @@ function renderPanel(geom,resArr,num,portMap,placement){
   const effs=placement.pairs.map(pairEff);
   const maxEff=Math.max(...effs);
   const order=placement.pairs.map((p,i)=>i).sort((a,b)=>effs[a]-effs[b]);
-  placement.pairs.forEach((pair,pi)=>{
+  // cards are listed in turn order (D-021); player numbers still match the board
+  order.forEach(pi=>{
+    const pair=placement.pairs[pi];
     const[name,color]=PLAYERCOLORS[pi];
     const covered=new Set([...pair[0].res,...pair[1].res]);
     const viaRoad=new Set(pair.flatMap(sp=>sp.road?sp.road.chips.map(c=>c[0]):[]));
@@ -968,7 +1029,7 @@ function renderPanel(geom,resArr,num,portMap,placement){
     const spotHTML=spot=>{
       const inf=vertexInfo(geom,resArr,num,spot.vid);
       const port=portMap.get(spot.vid);
-      const portChip=port?`<span class="chip pt">⚓ ${port==="any"
+      const portChip=port?`<span class="chip pt">⚓︎ ${port==="any"
         ?"3:1":`2:1 <span class="dot" style="background:${RES[port]}"></span>`}</span>`:"";
       const tgt=spot.road&&spot.road.target!=null
         ?`<span class="hexes tgt">${chipsOf(spot.road.chips)}</span>`
@@ -995,27 +1056,27 @@ function renderPanel(geom,resArr,num,portMap,placement){
   const ok=spread<=2;
   const starter=PLAYERCOLORS[order[0]][0];
   const cov5=placement.covmin!=null&&placement.covmin>=5;
-  fc.innerHTML=`<span class="big">±${spread}</span>
-    <div><span class="pill ${ok?"good":"warn"}">${ok?"Balanced start":"Uneven — re-draw"}</span>${
-      state.allRes?` <span class="pill ${cov5?"good":"warn"}">${cov5
-        ?"All 5 resources each":"Best possible — roads fill the gaps"}</span>`:""}
+  fc.innerHTML=`<p class="fl"><span class="${ok?"good":"warn"}">${ok
+      ?`Balanced start · every seat within ±${spread} pips`
+      :`Uneven — re-draw · ±${spread} pips apart`}</span>${
+      state.allRes?` · <span class="${cov5?"good":"warn"}">${cov5
+        ?"All 5 resources each":"Best possible — roads fill the gaps"}</span>`:""}</p>
     <small>start-value gap (pips + port worth), best vs worst · avg ${
       (sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)} pips each ·
-      <b>${starter} starts first</b>, then weakest to strongest</small></div>`;
+      <b>${starter} starts first</b>, then weakest to strongest</small>`;
 }
 function renderBoardPanel(isSea,draftSpread){
   document.getElementById("fairCard").innerHTML=
-    `<span class="big">⚓</span><div><span class="pill good">Balanced board</span>
+    `<p class="fl"><span class="good">Balanced board</span></p>
      <small>Fair board and ports. Everyone drafts their own settlements, so no corner is a
      runaway pick and the placement duel is still yours to play.${
        draftSpread!=null?` A solid snake draft on this board lands within
-       <b>±${Math.round(draftSpread*10)/10} pips</b>.`:""}</small></div>`;
+       <b>±${Math.round(draftSpread*10)/10} pips</b>.`:""}</small>`;
   document.getElementById("playerCards").innerHTML=
-    `<div class="card"><b>Place your own settlements</b>
+    `<div class="card boardnote"><b>Place your own settlements</b>
      <div class="covers" style="margin-top:.4rem">The board is generated to be fair, then it's
      yours to draft. What's guaranteed:</div>
-     <ul style="margin:.45rem 0 0;padding-left:1.1rem;display:flex;flex-direction:column;
-       gap:.3rem;font-size:.85rem;color:var(--muted)">
+     <ul>
        <li>No 6/8 touching, no twin numbers touching, no 2 beside 12</li>
        <li>No same-resource clumps, even pip share across all five resources</li>
        ${isSea
@@ -1172,6 +1233,35 @@ window.addEventListener("popstate",e=>{
   state.board=null;
   generate(true,"none",e.state?.hash===location.hash?e.state.placement:null);
 });
+/* ---------- theme (D-023): system by default, #theme overrides and is remembered ---------- */
+const darkMQ=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):null;
+const printMQ=window.matchMedia?window.matchMedia("print"):null; // print is always Day
+function storedTheme(){try{const t=localStorage.getItem("hm-theme");
+  return t==="dark"||t==="light"?t:null;}catch(_){return null}}
+let themeOverride=storedTheme(); // kept in memory too, so the toggle works without storage
+function applyTheme(){
+  const mode=themeOverride||(darkMQ&&darkMQ.matches?"dark":"light");
+  document.documentElement.dataset.theme=mode;
+  const label=mode==="dark"?"Switch to day mode":"Switch to night mode";
+  const b=document.getElementById("theme");
+  b.setAttribute("aria-label",label); b.title=label;
+  b.querySelector(".i-sun").style.display=mode==="dark"?"":"none";
+  b.querySelector(".i-moon").style.display=mode==="dark"?"none":"";
+  const meta=document.querySelector('meta[name="theme-color"]');
+  const ground=mode==="dark"&&!(printMQ&&printMQ.matches)?"#0d1311":"#f2eee5";
+  if(meta)meta.setAttribute("content",ground);
+}
+document.getElementById("theme").onclick=()=>{
+  const next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  themeOverride=next;
+  try{localStorage.setItem("hm-theme",next);}catch(_){}
+  applyTheme();
+};
+for(const mq of [darkMQ,printMQ]){ if(!mq)continue;
+  if(mq.addEventListener)mq.addEventListener("change",applyTheme);
+  else if(mq.addListener)mq.addListener(applyTheme);
+}
+applyTheme();
 readHash();
 syncControls();
 generate(true,"replace",history.state?.hash===location.hash?history.state.placement:null);
