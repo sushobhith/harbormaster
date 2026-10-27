@@ -34,3 +34,15 @@ Rule: a guard is proven by making it fail first. A test that has never been red 
 | TP-31 | D-012 | `test_page`: canonical, `og:url`, `og:image`, `twitter:image`, JSON-LD `url` all start with `https://harbormaster.fyi/`; no `vercel.app` in `<head>` | green 2026-10-26, proven red first (canonical reverted) |
 | TP-32 | D-012 | `test_page`: `sitemap.xml` `<loc>` and `robots.txt` `Sitemap:` name the new host; `<lastmod>` is a date in [2026-10-26, today] | green 2026-10-26, proven red first (lastmod 2026-10-16) |
 | TP-33 | D-013 | `scripts/verify_live.sh` exits non-zero against a host that does not resolve and against `example.com` | proven 2026-10-26: exit 1 on both, `example.com` fails on the missing canonical despite its 200 |
+
+## Step 3a — Tide revamp (D-020..D-029)
+
+| Id | Decision | Assertion | Status |
+|---|---|---|---|
+| TP-34 | D-026 | `test_golden` byte-identical: generation untouched by the revamp | pending |
+| TP-35 | D-023 | `test_tide`: page follows `prefers-color-scheme`; `#theme` overrides it and the override survives a reload; `@media print` ground is Day | pending |
+| TP-36 | D-024 | `test_tide` + existing `test_ui`: every id in D-024 present with its element type; the segment button texts unchanged; `test_ui` passes unedited | pending |
+| TP-37 | D-021 | `test_tide`: at 390×844, `#board` is ≥ 340px wide and its bottom edge is ≤ 844px at 4p and 6p classic; `document.documentElement.scrollWidth ≤ 390` | pending |
+| TP-38 | D-020 | `test_tide`: contrast ≥ 4.5:1 (computed from `getComputedStyle`, first opaque ancestor as ground) for body, muted, tagline, button, fairness, player-row, seed and token-number text in both modes | pending |
+| TP-39 | D-025 | `test_assets`: page load makes no request to `fonts.googleapis.com` or `fonts.gstatic.com`; `@font-face` rules for Manrope and Instrument Serif point at files under `fonts/` that exist and report `loaded` in `document.fonts` | pending |
+| TP-40 | D-027 | `test_assets`: `og-image.png` is 1200×630 (pngjs); outside CI its mtime is not older than `docs/og-card.html` | pending |
