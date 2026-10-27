@@ -530,7 +530,8 @@ reversal is a new entry that names the old one. Founder calls are marked.
   (copy call 2, may be nothing) is a `<span class="seedtag">` inside `.seedbox` with no id, filled by
   `generate()` only while the seed is today's. `#copy` is unchanged. No scoring, streaks, server or
   analytics event (D-019; `board_today` goes into the Step 1.2 issue). `sitemap.xml` `<lastmod>`
-  becomes 2026-10-28 in the same change (TP-32 bounds it to today at most).
+  is bumped in the same change to the UTC date of the build (2026-10-27: TP-32 forbids a date after
+  today UTC, and the build finished at 19:16 UTC).
 - **Why:** Every other design adds a second source of truth. A `&today=1` flag or a dedicated code
   path would need its own history, copy-link and golden handling and would break the day after. A
   local date gives neighbouring time zones different "today"s. Deriving `aria-pressed` in `generate()`
