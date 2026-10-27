@@ -13,19 +13,17 @@ weekday time (vault `ACTION_BOARD.md`).
 
 - **Now:** **Step 1 — post the five Koduo issues** (drafts in the Step 1 table, updated 2026-10-28 against
   the final markup: 1.1 fonts + both theme colours, 1.2 `board_today` + `theme_toggle`, 1.4 placement, 1.5 sea
-  ring + `#today`). First the founder deploys 3b by hand: `vercel deploy --prod --yes`, the alias step,
-  `scripts/verify_live.sh`, then tap Today's board on two phones (same UTC day ⇒ same board). Step 3b is
-  **live since 2026-10-28 early morning** (deployed and pushed by the founder; status under Step 3). Still open from
-  Step 2: pay @bbyy21's $25 credit and the Reddit reply.
-- **Next:** Step 1 (five parallel Koduo tasks) and Step 2 (founder ops) run in the same fortnight.
-  Step 3 waits on the research in Step 2 and two weeks of analytics baseline.
+  ring + `#today`). Steps 3a and 3b are both live (3b since 2026-10-28 early morning; status under Step 3).
+  Still open from Step 2: pay @bbyy21's $25 credit and the Reddit reply.
+- **Next:** Step 1 (five parallel Koduo tasks) and the remaining Step 2 founder ops run together.
+  Step 4 gate reads the analytics against the 2026-10-26 baseline (late December 2026).
 - **Baseline numbers (D-015, Vercel Analytics, 30 days 2026-09-26 to 2026-10-26, read 2026-10-26
   via `vercel api`):** 185 visitors / 254 views, 84% mobile (156 of 185). Countries: IN 68 (37%),
   US 36, CA 30, KR 14, GB 6, ES 6, AU 5, DE 4; 63% of visitors outside India. Referrers: almost all
   direct or unknown; google.com 9, reddit app 3, bing.com 2. Only `/` is ever requested. No custom
   events exist yet, so nothing is known about what visitors do on the page. Read command:
   `vercel api "/v1/query/web-analytics/visits/aggregate?projectId=prj_oja7dumJosgyqpxcTr8StJ15KVvX&teamId=team_4x1sKLrHjPimznzfpf0BkFag&since=...&until=...&by=country" --method GET`.
-- **Blockers:** none on the build. Search Console, Bing and the domain need founder logins.
+- **Blockers:** none. Domain, Search Console and Bing done 2026-10-27 (Step 2).
 
 ## The thesis, in one line
 
