@@ -266,3 +266,16 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected for now:** SEO calculator pages (CatanBoard owns them); multi-game setup (no
   demand evidence); tournament packs (no evidence leagues want them); Cities & Knights setup.
 - **Affects:** ROADMAP Step 3 scope.
+
+## D-019 — What Harbormaster is: the fastest way to set up a fair Catan game, on your phone, at the table (2026-10-27, founder)
+- **Decision:** The product is a mobile-first setup tool for in-person play. Growth comes from groups
+  sharing board links and from search. The daily shared board (D-018) is a feature inside it, a
+  "Today's board" button with the same date-seeded board for everyone, **with no scoring**. The name
+  leads; "Catan" is used only as a description (CATAN IP guidelines, vault research page).
+- **Why:** 84% of visitors are on mobile and the tool is used at the table. A daily board without a
+  score has no result to compare, so it cannot carry the product on its own. A game-night companion
+  (timer, dice stats, score tracker) had no traffic evidence in the Step 2.4 research.
+- **Alternatives rejected:** B "tonight's board everywhere" as the product (thin hook without a score);
+  C full game-night companion (no evidence).
+- **Affects:** D-018 (amended: feature, no scoring); ROADMAP Step 3 becomes the UI revamp then
+  Today's board; Step 1 Koduo issues held until the revamp lands (all five touch `index.html`).

@@ -106,9 +106,12 @@ Nothing here is code. Order is by what unblocks the most.
 ## Step 3 — Build what the research says people value
 - **Why:** Both previous features people asked for (board-only mode, Seafarers) came from r/Catan.
   Guessing is how hobby projects stay hobby projects.
-- **Scope (D-018, 2026-10-27):** the daily board. One date-seeded board a day for everyone, place an
-  opening, share a result card. Phasing and scoring decided in the Step 3 brief.
-- **Status:** scope decided 2026-10-27; brief not written.
+- **Scope (D-019, 2026-10-27):** product is "the fastest way to set up a fair Catan game, on your
+  phone, at the table". 3a **UI revamp**: premium, mobile-first, the link preview (og image and title)
+  included; founder picks one of two or three directions from a tappable page, then one /orchestrate
+  session builds it. 3b **Today's board**: one button, date-seeded, same board for everyone, no score.
+  Step 1 Koduo issues stay unposted until 3a lands.
+- **Status:** product decided 2026-10-27; design directions page being built.
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip
