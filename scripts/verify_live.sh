@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Live check after a deploy (curl only): new host serves / with its own canonical, og-image, sitemap, robots; www 3xx to apex; old hosts 308 with path+query.
+# Live check after a deploy (curl only): new host serves / with its own canonical, og-image, sitemap, robots, a self-hosted font (D-025); www 3xx to apex; old hosts 308 with path+query.
 # Usage: scripts/verify_live.sh [NEW_HOST] [OLD_HOST ...]  defaults harbormaster.fyi; harbormaster.vercel.app fairhex.vercel.app ("none" = skip old hosts)
 # The post-deploy gate named in CLAUDE.md and DECISIONS D-013 (negative proof: TEST_PLAN TP-33). One PASS/FAIL line per check; exit 1 on any FAIL.
 # Also the smoke step that ROADMAP Step 1.3's deploy workflow calls.
@@ -47,6 +47,14 @@ check_get "$NEW/ 200 with canonical https://$NEW/" "https://$NEW/" "rel=\"canoni
 check_get "$NEW/og-image.png 200 image/png" "https://$NEW/og-image.png" "" "image/png"
 check_get "$NEW/sitemap.xml 200 naming https://$NEW/" "https://$NEW/sitemap.xml" "https://$NEW/"
 check_get "$NEW/robots.txt 200 naming https://$NEW/sitemap.xml" "https://$NEW/robots.txt" "https://$NEW/sitemap.xml"
+
+# D-025: self-hosted font is deployed (guards against a future .vercelignore rule dropping fonts/)
+what="$NEW/fonts/manrope-latin.woff2 200 font/woff2"
+fetch "https://$NEW/fonts/manrope-latin.woff2"
+if [ "$RC" -ne 0 ]; then fail "$what" "curl exit $RC"
+elif [ "$CODE" != "200" ]; then fail "$what" "status $CODE"
+else case "$CTYPE" in *font/woff2*|*application/font-woff2*|*application/octet-stream*) pass "$what" ;;
+  *) fail "$what" "status 200, content-type '$CTYPE'" ;; esac; fi
 
 what="www.$NEW/ 3xx -> https://$NEW/"
 redir "https://www.$NEW/"
