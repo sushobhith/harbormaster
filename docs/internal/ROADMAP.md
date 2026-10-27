@@ -111,7 +111,7 @@ Nothing here is code. Order is by what unblocks the most.
   included; founder picks one of two or three directions from a tappable page, then one /orchestrate
   session builds it. 3b **Today's board**: one button, date-seeded, same board for everyone, no score.
   Step 1 Koduo issues stay unposted until 3a lands.
-- **Status:** product decided 2026-10-27. Three directions (A Harbour, B Utility, C Tabletop) on the claude.ai design canvas https://claude.ai/artifact/5HEyuYS5CwvChu3toYVuhb, awaiting the founder's pick.
+- **Status:** product decided 2026-10-27 (D-019); visual system "Tide" night/day pair picked the same day (D-020, design canvas https://claude.ai/artifact/5HEyuYS5CwvChu3toYVuhb). 3a brief written in the vault (`founder-os/tasks/harbormaster/2026-10-27-step-3a-tide-revamp.md`), not started.
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip

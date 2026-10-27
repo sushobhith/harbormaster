@@ -279,3 +279,34 @@ reversal is a new entry that names the old one. Founder calls are marked.
   C full game-night companion (no evidence).
 - **Affects:** D-018 (amended: feature, no scoring); ROADMAP Step 3 becomes the UI revamp then
   Today's board; Step 1 Koduo issues held until the revamp lands (all five touch `index.html`).
+
+## D-020 — Visual system "Tide": night and day pair, quiet board, few boxes (2026-10-27, founder)
+- **Decision:** The revamp (Step 3a) uses the "Tide" system picked from the design canvas
+  (claude.ai artifact 5HEyuYS5CwvChu3toYVuhb, artboards "T4 Night" and "T4 Day"):
+  - **Two modes.** Follows the phone's setting by default; a small toggle overrides it and is
+    remembered in the browser. Print and the link preview image use Day.
+  - **Night:** ground `#0d1311`, ink `#ece6d8`, muted `#a7a294`, line `#27312d`, accent copper
+    `#c58a5c` with `#0d1311` text on it. **Day:** ground `#f2eee5`, ink `#16201c`, muted `#56605b`,
+    line `#ddd5c6`, accent `#9a5a30` with `#fbf8f1` text on it.
+  - **Board, muted tiles.** Night: wood `#4b6b55`, sheep `#7f9970`, wheat `#bfa06a`, brick
+    `#97604c`, ore `#6c7376`, desert `#9b8f78`, sea `#1f4540`. Day: wood `#5e8566`, sheep
+    `#9cb58a`, wheat `#d2b47a`, brick `#b07560`, ore `#8b9294`, desert `#c9bca2`, sea `#a9c4bd`.
+    The sea ring stays visible (it carries the ports). Number tokens show pip dots like the
+    physical tokens; 6 and 8 in red; ports drawn as ringed markers on the water.
+  - **Type:** Instrument Serif for the wordmark only, Manrope for everything else, tabular
+    figures for numbers. **Self-hosted** woff2 files, no request to Google (both fonts are SIL OFL;
+    German courts have fined sites for embedding Google Fonts, and the PWA in Step 1.1 needs them
+    offline).
+  - **Few boxes:** controls sit on the ground without borders or panels; one copper primary
+    button; hairline rules separate sections. No gradients, no emoji, no left-border cards.
+  - **Layout (phone):** wordmark and share at top; map switch and player count on one row; board
+    first and nearly full width; a one-line fairness note; "New board" full width; secondary
+    actions in one row; turn order as a short list. Everything currently on the page stays
+    reachable; rarely used toggles and the long rules text move below the fold or into a sheet.
+- **Why:** The founder rejected the first three directions as "almost but not quite"; a
+  one-change-at-a-time row showed the fix was fewer boxes, editorial type and a quieter board
+  together. A dark-only look excludes daylight and table use; the current site already follows the
+  phone's setting. Visible water keeps the board reading as Catan and keeps ports legible.
+- **Alternatives rejected:** A1 Admiralty, A4 Chart (founder preferred A2/A3); dark only.
+- **Affects:** ROADMAP Step 3a; `index.html` styles and toolbar markup; `docs/og-card.html` and
+  `og-image.png`; `theme-color` meta. Generation code is untouched, so `test_golden` must stay green.
