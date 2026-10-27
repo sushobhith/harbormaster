@@ -156,10 +156,8 @@
   .btn.primary{background:var(--accent);color:var(--on-accent);width:100%;min-height:54px;
     font-size:1.02rem;border-radius:12px}
   .btn:active{transform:translateY(1px)}
-  .row-sec{display:grid;grid-template-columns:repeat(3,1fr);gap:0;
-    border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .row-sec .btn{border-radius:0;min-width:0;padding-inline:.3rem;white-space:nowrap}
-  .row-sec .btn+.btn{border-left:1px solid var(--line)}
+  .row-sec{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .row-sec .btn{min-width:0;padding-inline:.3rem;white-space:nowrap}
   .chipbtn{border:1px solid var(--line);border-radius:99px;min-height:40px;padding:.35rem .85rem;
     font-weight:600}
   .chipbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -176,11 +174,12 @@
   #board text{font-variant-numeric:tabular-nums}
 
   /* fairness line between two hairlines */
-  .fair{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-    padding:.55rem 0;color:var(--muted);font-size:.92rem}
-  .fair .fl{margin:0;color:var(--muted);font-weight:600}
-  .fair .fl .warn{color:var(--ink)}
-  .fair small{display:block;color:var(--muted);font-size:.78rem;margin-top:.15rem}
+  .fair{padding:.2rem 0;color:var(--muted);font-size:.92rem;text-align:center}
+  .fair .fl{display:flex;align-items:center;gap:10px;margin:0;color:var(--muted);
+    font-size:.8rem;font-weight:500;letter-spacing:.04em}
+  .fair .fl::before,.fair .fl::after{content:"";flex:1;height:1px;background:var(--line)}
+  .fair .fl .warn{color:var(--ink);font-weight:600}
+  .fair small{display:block;color:var(--muted);font-size:.75rem;margin-top:.3rem}
   .fair small b{color:var(--ink)}
 
   .card{min-width:0}
