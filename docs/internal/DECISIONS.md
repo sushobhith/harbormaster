@@ -485,3 +485,110 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected:** per call: "Fair Catan setup, 3–6 players"; "Re-draw starts"; "best and
   worst seat N pips apart"; "Day mode"/"Night mode"; "Setup", "More".
 - **Affects:** `index.html` header, secondary row, `renderPanel`, footer, theme toggle, options row.
+
+## D-030 — Tile colours read as Catan: blue water, one distinct hue per tile (2026-10-28, founder)
+- **Decision:** The board's eight tile tokens take conventional Catan colours, water is blue, and no
+  two tiles share a colour family. Day: wood `#2f6b45`, sheep `#a9c957`, wheat `#e6c24a`, brick
+  `#c75f3a`, ore `#8a8e95`, desert `#e3d2a6`, sea `#7fb2d4`, gold `#e0962a`. Night: wood `#2a5a3b`,
+  sheep `#7e9f3f`, wheat `#c9a637`, brick `#a4482a`, ore `#666c74`, desert `#ab9d75`, sea `#1d4b6e`,
+  gold `#c7861f`. Print uses the Day values. The values live in exactly four places in `index.html`
+  (the three `:root` token blocks and the `@media print` block) plus the two hard-coded swatches in
+  `docs/og-card.html` (wood, brick, and the other three dots follow the Day values); `render()`, the
+  legend dots, the 2:1 port rings and the classic sea ring already read `var(--…)`, so nothing else
+  changes. `--hot`, `--tok`, `--tink`, `--ring`, `--edge`, `--port`, `--card` and `--p1..p6` stay as
+  D-026 set them. The link preview is re-rendered from the new page. This supersedes the "Board,
+  muted tiles" lines of D-020 and the tile values in D-026, and nothing else in either. Guard, TP-47
+  in `test_tide`, both schemes: water hue within 195°–235°, pairwise CIE76 ΔE ≥ 20 for every tile
+  pair except wheat/gold ≥ 15 (the ✦ sparkle on gold carries the rest). The founder saw the palette
+  on a 390px live-vs-proposed preview (classic and Seafarers, both schemes) before the build.
+- **Why:** On the live Tide board wood, sheep and the water are three greens (Day hues 132°/95°/164°,
+  Night 139°/98°/172°) and wheat and gold sit 19 ΔE apart: 13 tile pairs under ΔE 30 in each
+  scheme. The board is the single thing the page delivers, and it has to read at a glance at the
+  table. The proposed sets have 3 (Day) and 2 (Night) pairs under 30 and only Night wheat/gold under
+  20, at 17.7.
+- **Alternatives rejected:** keeping the muted set and adding hatch patterns per tile (busier, and
+  the legend would need the patterns too); photographic tile textures (weight, and off-brand for
+  Tide); nudging only the water (sheep and wood stay two greens).
+- **Affects:** `index.html` token blocks and print block; `docs/og-card.html`; `docs/assets/board-day.png`
+  and `og-image.png` (re-rendered); TP-47; D-020 and D-026 as stated; `CLAUDE.md` "Visual system".
+
+## D-031 — Today's board: a date seed in the existing hash, one button, nothing new in generation (2026-10-28)
+- **Decision:** `todaySeed()` returns `today-YYYY-MM-DD` from `new Date().toISOString().slice(0,10)`,
+  so the date is **UTC** and the whole world gets one board a day. It is an ordinary seed: it rides
+  `#s=`, the `seed|players` and `|sea` namespaces, Copy link, Back/Forward and the golden test with no
+  new path in generation, and a shared link keeps working tomorrow because the seed carries its date.
+  New button `#today` (`<button class="btn" id="today">`, label is copy call 1) in `.row-sec` between
+  `#reroll` and `#copy`. The row becomes a two-by-two grid (`grid-template-columns:repeat(2,1fr)`):
+  at 390px "Re-draw spots" is 104.5px of text and four cells would be 79.5px wide. `generate()`
+  sets `document.body.dataset.mode` next to `dataset.map`, and `body[data-mode="board"] .row-sec`
+  goes back to three columns because `#reroll` is hidden in Board only. Click:
+  `state.seed=todaySeed(); state.board=null; generate(true,"push")`. `aria-pressed` on `#today` is
+  **derived**, set in `generate()` from `state.seed===todaySeed()`: true after the click, after
+  opening a `today-` link for the current date, after Back/Forward to one; false after New board or
+  on yesterday's link, with no toggle code anywhere. The button is present in both modes (the board
+  is the same; placement is theirs in Board only). `#seedLabel` keeps the raw seed; the word beside it
+  (copy call 2, may be nothing) is a `<span class="seedtag">` inside `.seedbox` with no id, filled by
+  `generate()` only while the seed is today's. `#copy` is unchanged. No scoring, streaks, server or
+  analytics event (D-019; `board_today` goes into the Step 1.2 issue). `sitemap.xml` `<lastmod>`
+  becomes 2026-10-28 in the same change (TP-32 bounds it to today at most).
+- **Why:** Every other design adds a second source of truth. A `&today=1` flag or a dedicated code
+  path would need its own history, copy-link and golden handling and would break the day after. A
+  local date gives neighbouring time zones different "today"s. Deriving `aria-pressed` in `generate()`
+  means it cannot desync from the hash.
+- **Alternatives rejected:** local-date seed; a `&today=1` hash flag; toggling `aria-pressed` in the
+  click and New board handlers (popstate desync); a fourth equal cell in one row (does not fit at
+  390px); hiding the button in Board only (the shared board is the point in both modes).
+- **Affects:** `index.html` markup, `.row-sec` CSS, `generate()`, one handler; TP-41..44; `CLAUDE.md`
+  Architecture §1; `sitemap.xml`.
+
+## D-032 — Step 3b tests and landing order (2026-10-28)
+- **Decision:** TP-41..44 extend `test/test_ui.mjs` as a new section at its end; the date is frozen
+  for the whole section with `page.clock.setFixedTime(new Date("2026-10-27T12:00:00Z"))` on every page
+  it opens, so the expected seed is the literal `today-2026-10-27`. TP-45 and TP-46 go in
+  `test/test_assets.mjs`; TP-47 in `test/test_tide.mjs`. TP-46 is three checks: every image that
+  `README.md` or `docs/og-card.html` references under `docs/assets/` exists; every png or gif under
+  `docs/assets/` is referenced by one of those two files or by a script under `scripts/` (no orphans);
+  and, outside CI (same skip and reason as TP-40), each referenced png or gif has an mtime no older
+  than `index.html`'s, so a visible change to the page forces the previews to be re-rendered. Each
+  new assertion is shown red before green, with the red named in TEST_PLAN. `test_golden` is not
+  touched and must stay byte-identical. Landing order: Piece 1 (`index.html` and its tests) lands
+  first; Piece 2 is rebased onto it and landed second; then the orchestrator re-records
+  `docs/assets/demo.gif` and re-renders the og pair from the landed page, because Piece 2's worktree
+  has neither the button nor the new tiles and a preview recorded there would show the old page.
+- **Why:** The UI suite is the UI suite (TP-36 already asserts `test_ui` passes unedited; adding to it
+  keeps one net). A frozen clock makes the seed assertion literal instead of a race with midnight. A
+  git-date check for stale assets is meaningless in a depth-1 checkout, while the mtime rule is the
+  pattern TP-40 already uses and it says exactly what CLAUDE.md asks for.
+- **Alternatives rejected:** a separate `test_today.mjs`; comparing asset dates against a fixed
+  anchor commit (passes forever once the anchor is old); recording the gif in Piece 2's worktree.
+- **Affects:** `test/test_ui.mjs`, `test/test_assets.mjs`, `test/test_tide.mjs`, TEST_PLAN TP-41..47.
+
+## D-033 — Front door before Step 1: CI runs all six suites, README and CONTRIBUTING describe the product as it is, old-look assets go (2026-10-28)
+- **Decision:** `.github/workflows/ci.yml` gains steps for `test:tide` and `test:assets` (`fonts/` is in
+  the repo; TP-40's mtime half already skips itself under `CI`). TP-45 reads `package.json` and asserts
+  every `test:*` script except `test:quick` appears as a `run: npm run test:<name>` line in `ci.yml`.
+  `README.md`: the five badge colours move to Tide (`9a5a30`, `5e8566`, `9cb58a`, `8b9294`, `d2b47a`);
+  the "Themed" row and a new "Today's board" row take the founder's wording (copy calls); both test
+  blocks become `npm test` with the six suites named in one line each; `docs/assets/demo.gif` is
+  re-recorded with `scripts/make-demo-gif.mjs` at the Tide desktop layout (1300×940, D-022), keeping
+  the mixed player-count and map list and adding one `today-` seed, after Piece 1 has landed (D-032).
+  `hero-dark.png`, `hero-light.png`, `board-dark.png`, `board-light.png` are deleted: nothing references
+  them, git history keeps them, and a social post that wants a hero gets one rendered from the current
+  page. `CONTRIBUTING.md`: the test section becomes `npm test`, names the six suites and what each
+  proves, and says `fonts/` must be present for `test_tide` and `test_assets`; three new lines: element
+  ids and segment texts are frozen (D-024, both UI suites read them); visible wording is the
+  founder's (D-005, ship `TODO(copy)` placeholders); no external requests, fonts are self-hosted
+  (D-025). The five Step 1 issue drafts in ROADMAP are updated in place so they are posted once
+  against final markup: 1.1 caches `/fonts/*` and carries both theme colours; 1.2 adds `board_today`
+  and `theme_toggle`; 1.4 places the tip line in the Tide layout (footer, one line under the fairness
+  note); 1.5 includes the classic sea ring (a CSS `clip-path` on `.boardwrap`, not part of the SVG)
+  and honours the active theme. Text only; nothing posted. The Claude-artifact copy of the app in
+  `CLAUDE.md` is the founder's call (asked in this session; default: delete the line).
+- **Why:** Koduo tasks merge on CI green, and two of the six suites have never run on a PR. The
+  README is the first thing the invited contributors see, and it shows a palette and a theme line
+  that no longer exist. The issue drafts name markup that 3a and 3b changed.
+- **Alternatives rejected:** keeping the old pngs for a future post (dead weight that misleads);
+  recording the demo at phone width (a 390px gif in an 880px README slot); a separate CI job for the
+  two new suites (one job, one green).
+- **Affects:** `.github/workflows/ci.yml`, `README.md`, `CONTRIBUTING.md`, `docs/assets/`,
+  `scripts/make-demo-gif.mjs`, `docs/internal/ROADMAP.md` Step 1 table, `CLAUDE.md`; TP-45, TP-46.
