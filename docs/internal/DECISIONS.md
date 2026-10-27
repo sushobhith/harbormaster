@@ -468,3 +468,20 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected:** one shared test file (merge conflict between parallel worktrees);
   mtime check in CI (git checkout does not preserve mtimes).
 - **Affects:** `test/test_tide.mjs`, `test/test_assets.mjs`, `package.json`, `TEST_PLAN.md`.
+
+## D-029 — Step 3a copy: the five customer-visible strings (2026-10-27, founder)
+- **Decision:** (1) Tagline under the wordmark: `Fair setup for Catan` (replaces "Balanced Catan
+  boards with fair starting settlements, for 3–6 players."). (2) Re-draw button: `Re-draw spots`;
+  the footer sentence becomes `Re-draw spots keeps the board and only re-deals the starting
+  settlements and roads.` (3) Fairness line, balanced state: `Balanced start · every seat within
+  ±N pips` with N the real spread (e.g. `±1`); uneven state (spread over 2): `Uneven — re-draw ·
+  ±N pips apart`; Board only keeps today's "Balanced board" sentence including the snake-draft
+  `±N pips`; All 5 resources keeps today's `All 5 resources each` / `Best possible — roads fill
+  the gaps`. The starter line (`Red starts first, then weakest to strongest`) stays as today's
+  second, smaller line. (4) Theme toggle: icon only, `aria-label` and `title` read `Switch to day
+  mode` when Night is active and `Switch to night mode` when Day is active. (5) Options row label:
+  `Options`. `<title>` and meta description unchanged. No other visible wording changes.
+- **Why:** D-005: copy is the founder's. Asked and answered one at a time 2026-10-27.
+- **Alternatives rejected:** per call: "Fair Catan setup, 3–6 players"; "Re-draw starts"; "best and
+  worst seat N pips apart"; "Day mode"/"Night mode"; "Setup", "More".
+- **Affects:** `index.html` header, secondary row, `renderPanel`, footer, theme toggle, options row.
