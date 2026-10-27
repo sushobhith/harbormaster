@@ -8,11 +8,11 @@ Board, numbers, ports, **and two balanced starting settlements + roads for every
 
 [**▶ Play it now → harbormaster.fyi**](https://harbormaster.fyi)
 
-[![Live](https://img.shields.io/badge/demo-harbormaster.fyi-c94f38)](https://harbormaster.fyi)
-[![License: MIT](https://img.shields.io/badge/license-MIT-3e7a45)](LICENSE)
-![No build step](https://img.shields.io/badge/build-none-8fbf6a)
-![Dependencies](https://img.shields.io/badge/runtime%20deps-0-7d8494)
-![Single file](https://img.shields.io/badge/one-index.html-d9a83c)
+[![Live](https://img.shields.io/badge/demo-harbormaster.fyi-9a5a30)](https://harbormaster.fyi)
+[![License: MIT](https://img.shields.io/badge/license-MIT-5e8566)](LICENSE)
+![No build step](https://img.shields.io/badge/build-none-9cb58a)
+![Dependencies](https://img.shields.io/badge/runtime%20deps-0-8b9294)
+![Single file](https://img.shields.io/badge/one-index.html-d2b47a)
 
 <img src="docs/assets/demo.gif" alt="Clicking New board repeatedly generates fresh, balanced 6-player Catan boards, each with fair per-player starting settlements and a balanced-start readout" width="880">
 
@@ -56,7 +56,8 @@ No signup. No app. One HTML file. Works on the phone that is already on the tabl
 | **Real ports** | Harbor layout traced from photos of the actual game frame ([here](docs/frames)). |
 | **Turn order** | Weakest start plays first, to cancel the last sliver of imbalance. |
 | **Shareable** | `#s=<seed>&p=<players>` reproduces any table exactly. |
-| **Themed** | Light and dark, follows your device. |
+| **Today's board** | One shared board a day for your player count; send the link. |
+| **Night and day** | Follows your phone; one tap to switch, remembered. |
 | **Honest** | A `±N` readout shows the gap between the best and worst hand at a glance. |
 
 ---
@@ -83,7 +84,7 @@ Settlements are dealt by pairing the strongest opening spot with the weakest, th
 - Start-value gap of **1 pip or less in ~93%** of tables, **2 or less in ~100%.**
 - For comparison, the way most groups draft by hand lands inside 1 pip only about **half** the time.
 
-Run it yourself: `node test/test_balance.mjs "$PWD" 100`.
+Run it yourself: `npm test`.
 
 ---
 
@@ -108,10 +109,16 @@ open index.html          # or: python3 -m http.server, then visit localhost:8000
 To run the test harness (the only thing that needs a dependency):
 
 ```bash
-npm install              # pulls playwright, for the headless tests only
-node test/test_balance.mjs "$PWD" 100   # balance simulation across 3-6 players
-node test/test_page.mjs "$PWD"          # render + constraint smoke test
+npm install              # playwright, for the headless tests only
+npm test                 # six suites: balance, page, golden, ui, tide, assets
 ```
+
+- **balance**: the hard rules and the start-value gap, across 3–6 players.
+- **page**: render and constraint smoke test.
+- **golden**: classic boards byte-identical to the frozen baseline, so shared links never change.
+- **ui**: every toolbar control, hash round trips, history.
+- **tide**: theme toggle, frozen ids, 390px layout, contrast.
+- **assets**: no Google Fonts request, self-hosted fonts load, link-preview image is 1200×630.
 
 Deploy is a static push — the live site runs on Vercel with zero configuration.
 

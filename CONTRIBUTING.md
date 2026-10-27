@@ -21,12 +21,26 @@ Add `#s=<seed>&p=<players>` to the URL to reproduce a specific table.
 Run the test harness. It generates hundreds of boards and checks the hard rules never break and the balance stays tight.
 
 ```bash
-npm install                              # playwright, for headless tests only
-node test/test_balance.mjs "$PWD" 100    # balance sim across 3-6 players
-node test/test_page.mjs "$PWD"           # render + constraint smoke test
+npm install              # playwright, for headless tests only
+npm test                 # six suites: balance, page, golden, ui, tide, assets
 ```
 
+- **balance**: the hard rules and the start-value gap, across 3–6 players.
+- **page**: render and constraint smoke test.
+- **golden**: classic boards byte-identical to the frozen baseline, so shared links never change.
+- **ui**: every toolbar control, hash round trips, history.
+- **tide**: theme toggle, frozen ids, 390px layout, contrast.
+- **assets**: no Google Fonts request, self-hosted fonts load, link-preview image is 1200×630.
+
+`test_tide` and `test_assets` open the page from `file://` and need the `fonts/` directory present (it is in the repo).
+
 A change is good to ship when `test_balance` reports **0 invariant violations** and a start-value gap of **2 or less in ~100%** of setups. If your change moves those numbers, say so in the PR.
+
+## Three things to know
+
+- Element ids and the segment button texts are frozen (D-024 in `docs/internal/DECISIONS.md`). Both UI suites read them, so a new control gets a new id and nothing is renamed.
+- Visible wording is the founder's (D-005). Ship `TODO(copy)` placeholders and say so in the PR.
+- The page makes no external requests. Fonts are self-hosted under `fonts/` (D-025), and a Google Fonts link fails `test_assets`.
 
 ## Fixing a port
 
