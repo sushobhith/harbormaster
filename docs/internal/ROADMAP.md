@@ -130,8 +130,8 @@ Nothing here is code. Order is by what unblocks the most.
   re-recorded from the landed page `a9a5368`. `npm test` green: golden identical (TP-43), ui 202/202, tide 80
   (TP-47), assets 27 (TP-45/46), page 11, balance clean; TP-41..47 all proven red first. `sitemap.xml` lastmod is
   2026-10-27 (UTC build date; TP-32 forbids a future date). **Deployed and pushed by the founder 2026-10-28 ~01:50 IST**: live page carries `#today` and the D-030
-  tokens, og-image 200, old host 308 to the apex, first CI run with all six suites green (1m39s). The
-  sitemap lastmod bump (`a8e371b`) still needs its push and redeploy.
+  tokens, og-image 200, old host 308 to the apex, first CI run with all six suites green (1m39s). Sitemap
+  lastmod 2026-10-28 live after the second deploy; the live checks all green at ~02:05 IST.
 
 ## Step 4 — The 60-day gate (late December 2026)
 Three numbers decide it: monthly visitors, share from outside India, and whether a single tip
