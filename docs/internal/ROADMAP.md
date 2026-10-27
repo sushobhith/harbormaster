@@ -66,7 +66,10 @@ Nothing here is code. Order is by what unblocks the most.
 2. **Domain (D-008).** `harbormaster.fyi` registered at Porkbun 2026-10-26 (expires 2027-10-26,
    auto-renew on, lock on, WHOIS privacy on). Cutover is the Step 2 orchestrate brief in the vault;
    `vercel.app` stays live and becomes a redirect (D-011, D-012).
-3. **Search.** Google Search Console verification + sitemap, Bing import. Pending since 2026-07-09.
+3. **Search.** Google Search Console: Domain property `harbormaster.fyi` verified 2026-10-27 by TXT
+   record at Porkbun (do not delete that record), under the padfootsush Google account; sitemap
+   submitted the same day, first read said "Couldn't fetch" (normal for a new property; recheck
+   after 2026-10-28). Bing import from Search Console: pending, needs a Microsoft sign-in.
 4. **Research (deep-research, filed in the vault as `knowledge/pages/board-game-tools-monetisation.md`).**
    Question: what do users of free board-game tools actually pay or donate for, and what did tools
    that tried to charge get wrong. Sources: r/Catan, r/boardgames, BGG forums, Ko-fi and Buy Me a
