@@ -167,5 +167,50 @@ for (const scheme of ['dark', 'light']) {
   await page.close();
 }
 
+// ---------- TP-47 (D-030): tiles read as Catan ----------
+// Water is blue (HSL hue 195-235) and every tile pair is at least CIE76 dE 20 apart in Lab,
+// except wheat/gold (>= 15; the sparkle on gold carries the rest). Both schemes.
+{
+  const TILES = ['wood', 'sheep', 'wheat', 'brick', 'ore', 'desert', 'seahex', 'gold'];
+  const hexRgb = h => { const s = h.replace('#', ''); const f = s.length === 3 ? s.split('').map(c => c + c).join('') : s;
+    return [0, 2, 4].map(i => parseInt(f.slice(i, i + 2), 16) / 255); };
+  const lin = c => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const lab = h => {
+    const [r, g, b] = hexRgb(h).map(lin);
+    const X = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047;
+    const Y = (0.2126729 * r + 0.7151522 * g + 0.0721750 * b) / 1.0;
+    const Z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883;
+    const f = t => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+    const [fx, fy, fz] = [X, Y, Z].map(f);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  };
+  const dE = (a, b) => { const [p, q] = [lab(a), lab(b)]; return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]); };
+  const hue = h => {
+    const [r, g, b] = hexRgb(h); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    if (!d) return 0;
+    const x = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return (x * 60 + 360) % 360;
+  };
+  for (const scheme of ['dark', 'light']) {
+    const ctx = await browser.newContext({ colorScheme: scheme });
+    const page = await ctx.newPage();
+    await page.goto(url('#s=gamenite&p=4')); await ready(page);
+    const tok = await page.evaluate(names => Object.fromEntries(names.map(n =>
+      [n, getComputedStyle(document.documentElement).getPropertyValue(`--${n}`).trim()])), TILES);
+    const wh = hue(tok.seahex);
+    check(wh >= 195 && wh <= 235, `TP-47 ${scheme}: water hue ${wh.toFixed(0)}° within 195–235 (--seahex ${tok.seahex})`);
+    let min = null, bad = 0;
+    for (let i = 0; i < TILES.length; i++) for (let j = i + 1; j < TILES.length; j++) {
+      const [a, b] = [TILES[i], TILES[j]];
+      const d = dE(tok[a], tok[b]);
+      const need = (a === 'wheat' && b === 'gold') ? 15 : 20;
+      if (d < need) bad++, check(false, `TP-47 ${scheme}: ${a}/${b} dE ${d.toFixed(1)} >= ${need} (${tok[a]} vs ${tok[b]})`);
+      if (!min || d < min.d) min = { a, b, d };
+    }
+    check(!bad, `TP-47 ${scheme}: ${28 - bad}/28 tile pairs clear their dE floor; minimum ${min.a}/${min.b} dE ${min.d.toFixed(1)}`);
+    await ctx.close();
+  }
+}
+
 await browser.close();
 process.exit(process.exitCode || 0);
