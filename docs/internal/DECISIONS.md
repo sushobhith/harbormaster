@@ -310,3 +310,161 @@ reversal is a new entry that names the old one. Founder calls are marked.
 - **Alternatives rejected:** A1 Admiralty, A4 Chart (founder preferred A2/A3); dark only.
 - **Affects:** ROADMAP Step 3a; `index.html` styles and toolbar markup; `docs/og-card.html` and
   `og-image.png`; `theme-color` meta. Generation code is untouched, so `test_golden` must stay green.
+
+## D-021 — Step 3a phone layout: where every existing control goes (2026-10-27)
+- **Decision:** One column at phone width, top to bottom: (1) header: wordmark `Harbormaster`
+  (Instrument Serif) with the one-line tagline under it (copy, D-029), and on the right a round
+  44px theme toggle (new id `theme`); the GitHub link leaves the header and lives only in the footer
+  sentence that already links the repo. (2) one row: `#map` segment (Classic / Seafarers, flex 1)
+  and `#players` segment (3 4 5 6), both as today's `.seg` groups with `aria-pressed` buttons.
+  (3) the board, nearly full width (`#board` inside `.boardwrap`, no border, no panel: the sea ring
+  is the board's own edge). (4) the fairness line: `#fairCard` becomes one line of muted text between
+  two hairlines (copy, D-029); it keeps the strings the UI suite reads ("All 5 resources each",
+  "roads fill the gaps", "snake draft … ±N"). (5) `#newBoard`, full width, copper, 54px.
+  (6) secondary row, three equal cells: `#reroll`, `#copy`, `#print`; `#copy` is the share control
+  (its text feedback "Copied ✓" / the link on clipboard failure stays, so it must remain a text
+  button). (7) turn order: `#playerCards` keeps one card per player with today's content (head row,
+  two settlement rows with hex chips and road targets, the coverage line) but sorted into turn order
+  and drawn as hairline-separated rows, not boxes. (8) an options row labelled by copy call 5 (new
+  id `options`): `#mode` segment (Fair settlements / Board only), `#noPorts`, `#allRes` as toggle
+  chips, and `.seedbox` with `#seedLabel`. (9) the legend as one muted line. (10) `#methodCard`
+  (cheat sheet + built-in rules + Seafarers notes) and the footer FAQ as collapsed `<details>`
+  blocks, in the DOM for search engines. (11) footer: physical-setup sentence, re-draw sentence,
+  GitHub link. Nothing in the options row or below is inside a hidden container: every control is
+  one tap away and the existing Playwright clicks reach it without opening anything.
+- **Why:** D-020 fixes the order of the first six blocks; the rest follows "everything stays
+  reachable, rarely used things go below the fold". A sheet would hide `#mode`, `#noPorts` and
+  `#allRes` behind a tap and break the UI suite's direct clicks. `#players` stays a four-button
+  segment instead of the canvas's stepper because one tap reaches any count and the suite reads the
+  pressed button's text.
+- **Alternatives rejected:** a "More" bottom sheet (hides controls, breaks tests); a stepper for
+  players (two taps from 4 to 6, test rewrite); an icon-only share button in the header as `#copy`
+  (its feedback is text).
+- **Affects:** `index.html` markup and CSS; `renderPanel` (sort order only); TP-36, TP-37.
+
+## D-022 — Step 3a desktop layout: board left, everything else right (2026-10-27)
+- **Decision:** At `min-width: 900px` the page is a centred two-column grid, max 1120px wide: the
+  header spans both columns; the board takes the left column (`minmax(0, 1fr)`); the right column
+  (380px) stacks the map/players row, fairness line, `#newBoard`, the secondary row, the options row,
+  the turn-order rows; the legend, cheat sheet, FAQ and footer sit under the board in the left
+  column. Same tokens, type and spacing as the phone; nothing is shown or hidden by width.
+- **Why:** 16% of visitors are on desktop; a 1120px single column leaves the board small and the
+  controls far from it. Board left matches reading order and today's layout.
+- **Alternatives rejected:** a phone-width column centred on desktop (wastes the screen);
+  controls left (reading order puts the result first).
+- **Affects:** `index.html` CSS only.
+
+## D-023 — Theme mechanics: system by default, one toggle, remembered, print is Day (2026-10-27)
+- **Decision:** Day tokens live on bare `:root`; Night tokens are repeated under
+  `@media (prefers-color-scheme: dark)` guarded as `:root:not([data-theme="light"])` and under
+  `:root[data-theme="dark"]`, so the override wins in both directions. The `#theme` button reads the
+  effective mode (`data-theme` if set, else `matchMedia`) and sets the opposite as
+  `document.documentElement.dataset.theme`, storing it under `localStorage["hm-theme"]` inside
+  `try/catch`; a 12-line inline script at the end of `<head>` applies a stored value before first
+  paint. `<meta name="theme-color">` is updated by the same function to the active ground
+  (`#0d1311` / `#f2eee5`) and on `matchMedia` change events. `@media print` forces the Day tokens
+  on `:root`, `:root[data-theme="dark"]` and `:root[data-theme="light"]` and hides the toolbar rows,
+  toggle, cheat sheet, FAQ and footer. No theme code touches `rnd`, `state.seed` or generation.
+- **Why:** The site already follows the phone's setting; a remembered override is what D-020 asks
+  for. Reading the stored value before paint avoids a flash. Two-state toggle (not a three-way
+  cycle through "system") because the third state is invisible on a phone.
+- **Alternatives rejected:** a `<select>` with system/night/day (clutter); a cookie (no server).
+- **Affects:** `index.html` head, CSS, orchestration tail; TP-35.
+
+## D-024 — Element ids and test-read strings stay; new ids are new (2026-10-27)
+- **Decision:** These ids keep their element type, role and behaviour: `newBoard`, `reroll`,
+  `noPorts`, `allRes`, `copy`, `print`, `map`, `players`, `mode`, `seedLabel`, `board`, `fairCard`,
+  `playerCards`, `methodCard`. `#map`, `#players`, `#mode` stay `.seg` groups of buttons carrying
+  `data-map` / `data-n` / `data-mode` and `aria-pressed`, with the button texts `Classic`,
+  `Seafarers`, `3`..`6`, `Fair settlements`, `Board only`. The board SVG keeps: number text with
+  `font-size="15"`, house path `M -8 8 …`, `ROBBER`, `PIRATE` and `✦` texts, `polygon` per hex with
+  `fill="var(--…)"`. The classes `.legend .sea-only`, `.player .pips`, `.seg` keep their meaning.
+  New elements get new ids: `theme` (toggle), `options` (options row), `fold` (class for the
+  collapsed sections). `body[data-map]` and the `.sea-only` / `.classic-only` swaps stay.
+- **Why:** Both UI suites and the page audit read exactly these; they are the regression net for
+  "no feature removed".
+- **Alternatives rejected:** renaming to BEM-style ids with a test rewrite (no benefit).
+- **Affects:** `index.html`; TP-36.
+
+## D-025 — Fonts: two self-hosted latin woff2 files under `/fonts/`, OFL texts beside them (2026-10-27)
+- **Decision:** `fonts/instrument-serif-latin.woff2` (Instrument Serif Regular 400, latin subset)
+  and `fonts/manrope-latin.woff2` (Manrope variable, wght 200–800, latin subset), both the woff2
+  files Google Fonts serves for the latin `unicode-range`, downloaded once and committed. Their
+  licence texts ship as `fonts/OFL-InstrumentSerif.txt` and `fonts/OFL-Manrope.txt` (SIL OFL 1.1
+  requires the notice to travel with the files). `@font-face` in `index.html`: `font-display: swap`,
+  `font-weight: 200 800` for Manrope, `src: url(/fonts/…) format("woff2")`, with the latin
+  `unicode-range` from Google's CSS. Stacks: wordmark `"Instrument Serif", Georgia, serif`; body
+  `Manrope, system-ui, -apple-system, "Segoe UI", sans-serif`; `font-variant-numeric: tabular-nums`
+  on every number. `.vercelignore` is an exclusion list and does not name `fonts`, so no change is
+  needed for them to deploy; `scripts/verify_live.sh` gains a check that `/fonts/manrope-latin.woff2`
+  returns 200 so a future ignore rule cannot silently drop them.
+- **Why:** D-020 (no request to Google; offline PWA later). Variable Manrope is one file instead
+  of four. Latin subset keeps the two files under about 60 KB total.
+- **Alternatives rejected:** Google Fonts `<link>` (D-020); static Manrope 400/500/600/700 (four
+  requests); full character sets (size, no non-latin text on the page).
+- **Affects:** new `fonts/` directory; `index.html` `@font-face`; `scripts/verify_live.sh`; TP-39.
+
+## D-026 — Board rendering in Tide: colours and token drawing change, positions do not (2026-10-27)
+- **Decision:** All colours in `render()` come from CSS custom properties so the board follows the
+  theme: hex `fill` stays `var(--wood)` etc. with the D-020 tile values; hex `stroke` becomes
+  `var(--edge)` (the ground colour, so tiles read as islands) at width 2.5; number tokens: fill
+  `var(--tok)`, stroke `var(--ring)` width 1, number in Manrope 700 tabular (`font-size="15"` attribute
+  kept), pip dots under the number as today, 6 and 8 and their dots in `var(--hot)` (`#a8352b`);
+  ports: a ringed marker on the water at today's position: circle r 11 filled `var(--tok)`, ring
+  width 2.5 coloured by the port's resource for 2:1 and `var(--port)` (accent) for 3:1, the `2:1` /
+  `3:1` label kept inside in `var(--tink)`, and the two dock lines to the port's vertices kept but
+  thinner (width 2, `var(--port)` at 55% opacity) because they are the only thing that says which
+  two corners the port serves; settlements keep the house path and player number, stroke `var(--edge)`;
+  roads keep their two-stroke drawing with the dark under-stroke replaced by `var(--edge)`.
+  `PLAYERCOLORS` become theme tokens `--p1`..`--p6` (Night: `#d4553f`, `#4a83d1`, `#ece6d8`,
+  `#e39545`, `#5a9e63`, `#9a6a45`; Day: `#c8432f`, `#2f62b0`, `#ffffff`, `#e08a2c`, `#3f8a4a`,
+  `#8a5a3b`) used through `var(--pN)` in both the SVG and the cards; the name strings stay. The
+  robber, pirate and gold sparkles keep their glyphs, recoloured to `var(--tink)` / `var(--muted)`.
+  Token values per mode (from the canvas `renderVals()`, T4 flags): Night `--tok #ece6d8`,
+  `--tink #1a1f1c`, `--ring #a7a294`, `--edge #0d1311`, `--port #c58a5c`, `--card #111815`;
+  Day `--tok #fffdf8`, `--tink #16201c`, `--ring #9a8f7c`, `--edge #f2eee5`, `--port #9a5a30`,
+  `--card #f6f2ea`. Gold stays `--gold` (`#c9a24a` night, `#d8b253` day). Nothing in `buildGeom`,
+  `placePorts`, `placeResources`, `placeNumbers`, `drawSettlements`, `planRoads` or `__hm.run`
+  changes; `test_golden` must stay byte-identical.
+- **Why:** D-020 names the look; the rendering code already takes its colours from variables, so
+  the change is confined to `render()` attributes and the token blocks. Port type and the two served
+  vertices are information the table needs, so the canvas's bare dot is not enough.
+- **Alternatives rejected:** canvas-style unlabelled port dots (loses the 2:1 type); square
+  settlement markers (loses the player number that links board to card).
+- **Affects:** `index.html` `render()`, `PLAYERCOLORS`, tokens; TP-34.
+
+## D-027 — Link preview card in Tide Day; drawn favicon (2026-10-27)
+- **Decision:** `docs/og-card.html` is restyled to the Day tokens: ground `#f2eee5`, wordmark in
+  Instrument Serif, tagline in Manrope (the existing card sentence, kept), the five resource dots,
+  the URL line, and a Day render of the board on the right. The board asset is re-rendered from the
+  new `index.html` by a new `scripts/render-og.mjs` (Playwright: open `index.html#s=gamenite&p=6` in
+  Day, screenshot `#board` to `docs/assets/board-day.png`, then screenshot the card at 1200×630 to
+  `og-image.png`). The card loads the fonts from `../fonts/` so the render needs no network. The
+  "FREE & OPEN SOURCE" pill keeps its words without the anchor emoji. The favicon becomes a drawn
+  SVG data URI (copper ring on the night ground) instead of the emoji anchor.
+- **Why:** D-020 says the preview uses Day and no emoji. Re-rendering from the real page keeps the
+  card honest; the script makes the re-render repeatable after Piece A lands.
+- **Alternatives rejected:** keeping the dark card (contradicts D-020); a hand-drawn board in the
+  card (drifts from the product).
+- **Affects:** `docs/og-card.html`, `docs/assets/board-day.png`, `og-image.png`, `scripts/render-og.mjs`,
+  `index.html` favicon; TP-40.
+
+## D-028 — Step 3a test strategy and landing order (2026-10-27)
+- **Decision:** TP-34 is `test_golden` unchanged. TP-35 (theme), TP-36 (ids and strings of D-024),
+  TP-37 (390px: `#board` width ≥ 340, bottom edge ≤ 844 at 4 and 6 players classic, no horizontal
+  scroll) and TP-38 (contrast ≥ 4.5:1, computed from `getComputedStyle` with the first opaque ancestor
+  as ground, for body text, muted text, tagline, buttons, fairness line, player rows, seed, token
+  numbers in both modes) live in a new `test/test_tide.mjs` (Piece A). TP-39 (no request to
+  `fonts.googleapis.com` or `fonts.gstatic.com` during load; at least two `@font-face` rules naming
+  Manrope and Instrument Serif whose files exist under `fonts/` and load with `document.fonts`) and
+  TP-40 (`og-image.png` is 1200×630 by `pngjs`; outside CI its mtime is not older than
+  `docs/og-card.html`) live in a new `test/test_assets.mjs` (Piece B). `package.json` gains
+  `test:tide` and `test:assets`, both appended to `npm test`. Every new assertion is shown red
+  before green (a temporary edit in the worktree, reverted, or the pre-change file). Landing order:
+  Piece A first (it owns `index.html`), then Piece B rebased onto it, then `scripts/render-og.mjs`
+  run once on the landed page so TP-40 sees the final card; `npm test` after each landing.
+- **Why:** Piece B's font-loading assertion can only go green on top of Piece A's `@font-face`, so
+  B lands second and its red run on the old `index.html` is its proof.
+- **Alternatives rejected:** one shared test file (merge conflict between parallel worktrees);
+  mtime check in CI (git checkout does not preserve mtimes).
+- **Affects:** `test/test_tide.mjs`, `test/test_assets.mjs`, `package.json`, `TEST_PLAN.md`.
