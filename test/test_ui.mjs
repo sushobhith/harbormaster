@@ -359,7 +359,7 @@ const todayBtn = await page.evaluate(() => {
 check('TP-41 #today exists', todayBtn.exists);
 check('TP-41 #today has class btn', todayBtn.isBtn);
 check("TP-41 #today label is Today's board", todayBtn.text === "Today's board", `got ${todayBtn.text}`);
-check('TP-41 .row-sec order reroll,today,copy,print', JSON.stringify(todayBtn.order) === JSON.stringify(['reroll', 'today', 'copy', 'print']), JSON.stringify(todayBtn.order));
+check('TP-41 .row-sec order reroll,today,copy,saveImg,print', JSON.stringify(todayBtn.order) === JSON.stringify(['reroll', 'today', 'copy', 'saveImg', 'print']), JSON.stringify(todayBtn.order));
 await tapToday(page);
 let td = await todayState(page);
 check('TP-41 click sets hash', td.hash === `#s=${TODAY}&p=4`, td.hash);
@@ -382,7 +382,7 @@ const todayBoardMode = await page.evaluate(() => {
   };
 });
 check('TP-41 #today visible in Board only', todayBoardMode.visible);
-check('TP-41 .row-sec has three columns in Board only', todayBoardMode.tracks === 3, `got ${todayBoardMode.tracks}`);
+check('TP-41 .row-sec has two columns in Board only', todayBoardMode.tracks === 2, `got ${todayBoardMode.tracks}`);
 
 // TP-42: same date + players + map => same board on two fresh pages; other players/map differ
 const openToday = async (hash, date = FROZEN) => {
@@ -419,6 +419,138 @@ check('TP-44 old link: board drawn', await oldLink.evaluate(hasBoard));
 check('TP-44 old link: #today not pressed', oldState.pressed === 'false', String(oldState.pressed));
 check('TP-44 old link: seed label abc', oldState.seed === 'abc', oldState.seed);
 await oldLink.close();
+
+// TP-28: saveImg button presence
+await load('#s=savetest&p=4');
+const saveImgInfo = await page.evaluate(() => {
+  const b = document.getElementById('saveImg');
+  return {
+    exists: !!b,
+    hasClass: !!b && b.classList.contains('btn'),
+    text: b ? b.textContent.trim() : null,
+    order: [...document.querySelector('.row-sec').children].map(c => c.id),
+  };
+});
+check('TP-28 #saveImg exists with class btn and label Save image',
+  saveImgInfo.exists && saveImgInfo.hasClass && saveImgInfo.text === 'Save image',
+  `exists=${saveImgInfo.exists} hasClass=${saveImgInfo.hasClass} text=${saveImgInfo.text}`);
+check('TP-28 .row-sec child order is reroll,today,copy,saveImg,print',
+  JSON.stringify(saveImgInfo.order) === JSON.stringify(['reroll', 'today', 'copy', 'saveImg', 'print']),
+  JSON.stringify(saveImgInfo.order));
+
+// TP-28: PNG output via Web Share stub
+await load('#s=savetest&p=4');
+const pngShareResult = await page.evaluate(async () => {
+  let capturedFiles = null;
+  navigator.canShare = () => true;
+  navigator.share = async ({ files }) => { capturedFiles = files; };
+  const origFetch = window.fetch;
+  window.fetch = async (url) => {
+    if (String(url).includes('woff2')) return { ok: false };
+    return origFetch(url);
+  };
+  document.getElementById('saveImg').click();
+  await new Promise(res => {
+    const iv = setInterval(() => {
+      if (document.getElementById('saveImg').textContent === 'Save image') { clearInterval(iv); res(); }
+    }, 50);
+    setTimeout(() => { clearInterval(iv); res(); }, 12000);
+  });
+  window.fetch = origFetch;
+  if (!capturedFiles || !capturedFiles[0]) return { ok: false, reason: 'no files captured' };
+  const f = capturedFiles[0];
+  const ab = await f.arrayBuffer();
+  const bytes = new Uint8Array(ab);
+  const isPng = bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71;
+  return { ok: true, size: f.size, name: f.name, isPng };
+});
+check('TP-28 PNG file is non-empty with .png name and PNG magic bytes',
+  pngShareResult.ok && pngShareResult.size > 0 &&
+  (pngShareResult.name || '').endsWith('.png') && pngShareResult.isPng,
+  JSON.stringify(pngShareResult));
+
+// TP-28: PNG dimensions >= 2x SVG viewBox
+await load('#s=savetest&p=4');
+const pngDimResult = await page.evaluate(async () => {
+  let capturedFiles = null;
+  navigator.canShare = () => true;
+  navigator.share = async ({ files }) => { capturedFiles = files; };
+  const origFetch = window.fetch;
+  window.fetch = async (url) => {
+    if (String(url).includes('woff2')) return { ok: false };
+    return origFetch(url);
+  };
+  const svg = document.getElementById('board');
+  const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+  const svgW = vb[2], svgH = vb[3];
+  document.getElementById('saveImg').click();
+  await new Promise(res => {
+    const iv = setInterval(() => {
+      if (document.getElementById('saveImg').textContent === 'Save image') { clearInterval(iv); res(); }
+    }, 50);
+    setTimeout(() => { clearInterval(iv); res(); }, 12000);
+  });
+  window.fetch = origFetch;
+  if (!capturedFiles || !capturedFiles[0]) return { ok: false, svgW, svgH, pngW: 0, pngH: 0 };
+  const f = capturedFiles[0];
+  const ab = await f.arrayBuffer();
+  const dv = new DataView(ab);
+  const pngW = dv.getUint32(16);
+  const pngH = dv.getUint32(20);
+  return { ok: true, pngW, pngH, svgW, svgH };
+});
+check('TP-28 PNG dimensions are at least 2x SVG viewBox width and height',
+  pngDimResult.ok && pngDimResult.pngW >= pngDimResult.svgW * 2 && pngDimResult.pngH >= pngDimResult.svgH * 2,
+  `pngW=${pngDimResult.pngW} svgW=${pngDimResult.svgW} pngH=${pngDimResult.pngH} svgH=${pngDimResult.svgH}`);
+
+// TP-29: clicking #saveImg does not mutate live #board SVG innerHTML
+await load('#s=immtest&p=4');
+const immResult = await page.evaluate(async () => {
+  navigator.canShare = () => true;
+  navigator.share = async () => {};
+  const origFetch = window.fetch;
+  window.fetch = async (url) => {
+    if (String(url).includes('woff2')) return { ok: false };
+    return origFetch(url);
+  };
+  const liveBoard = document.getElementById('board').innerHTML;
+  document.getElementById('saveImg').click();
+  await new Promise(res => {
+    const iv = setInterval(() => {
+      if (document.getElementById('saveImg').textContent === 'Save image') { clearInterval(iv); res(); }
+    }, 50);
+    setTimeout(() => { clearInterval(iv); res(); }, 12000);
+  });
+  window.fetch = origFetch;
+  const afterBoard = document.getElementById('board').innerHTML;
+  return { boardUnchanged: liveBoard === afterBoard };
+});
+check('TP-29 live #board SVG innerHTML unchanged after saveImg', immResult.boardUnchanged);
+
+// T4/T5: grid layout in fair and board mode
+await load('#s=gridtest&p=4');
+const gridFair = await page.evaluate(() => ({
+  cols: getComputedStyle(document.querySelector('.row-sec')).gridTemplateColumns.trim().split(/\s+/).length,
+  printSpan: getComputedStyle(document.getElementById('print')).gridColumn,
+}));
+check('T4 .row-sec has 2 columns in fair mode', gridFair.cols === 2, `got ${gridFair.cols}`);
+check('T4 #print spans both columns in fair mode',
+  /1\s*\/\s*-1|span 2/.test(gridFair.printSpan), `got gridColumn=${gridFair.printSpan}`);
+await page.click('#mode button[data-mode="board"]');
+const gridBoard = await page.evaluate(() => ({
+  cols: getComputedStyle(document.querySelector('.row-sec')).gridTemplateColumns.trim().split(/\s+/).length,
+  rerollHidden: document.getElementById('reroll').style.display === 'none',
+  saveImgVisible: getComputedStyle(document.getElementById('saveImg')).display !== 'none',
+  todayVisible: getComputedStyle(document.getElementById('today')).display !== 'none',
+  copyVisible: getComputedStyle(document.getElementById('copy')).display !== 'none',
+  printVisible: getComputedStyle(document.getElementById('print')).display !== 'none',
+}));
+check('T5 .row-sec has 2 columns in board mode (NOT 3)', gridBoard.cols === 2, `got ${gridBoard.cols}`);
+check('T5 #reroll hidden in board mode', gridBoard.rerollHidden);
+check('T5 #saveImg visible in board mode', gridBoard.saveImgVisible);
+check('T5 #today visible in board mode', gridBoard.todayVisible);
+check('T5 #copy visible in board mode', gridBoard.copyVisible);
+check('T5 #print visible in board mode', gridBoard.printVisible);
 
 // TP-43: the seed, not the clock, drives the board
 const unfrozen = await openPage(`#s=${TODAY}&p=4`, null);
