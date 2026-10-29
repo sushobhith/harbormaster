@@ -7,14 +7,19 @@ in `DECISIONS.md`; test ids in `TEST_PLAN.md`. Architecture is `CLAUDE.md` at th
 The project is a weekend side project and a Koduo dogfood repo. It does not compete with Koduo for
 weekday time (vault `ACTION_BOARD.md`).
 
-## Current State (Last Updated: 2026-10-28)
+## Current State (Last Updated: 2026-10-29)
 
 <!-- Now = the single current focus. Per-step detail lives in that step's Status line, never here. -->
 
-- **Now:** **Step 1 — post the five Koduo issues** (drafts in the Step 1 table, updated 2026-10-28 against
-  the final markup: 1.1 fonts + both theme colours, 1.2 `board_today` + `theme_toggle`, 1.4 placement, 1.5 sea
-  ring + `#today`). Steps 3a and 3b are both live (3b since 2026-10-28 early morning; status under Step 3).
-  Still open from Step 2: pay @bbyy21's $25 credit and the Reddit reply.
+- **Now:** **Step 1 running.** 1.5 posted 2026-10-29 as issue #20 (`Share board as image`, Koduo AI lane,
+  label `bounty-12.60`, thin owner-style text on purpose: the plan step must find the sea ring, themes, fair-mode
+  cards and the golden test in the repo docs itself, and did). Plan approved as is 2026-10-29 ~14:30 IST (no edit box);
+  PR #21 arrived ~14:45 IST, CI green. Founder review on the branch (six suites + browser exports in both
+  themes, maps, modes): 3 must-fix (Board only row broken by the Print span, board text in Times in the PNG,
+  file name without players/map) + 3 should-fix; review posted as changes requested and **fixed by the
+  founder's session on the branch** (`f916bb5`, ~15:35 IST: 224/224 ui, new checks proven red first, og +
+  demo re-rendered, CLAUDE.md entry). CI green, **merged by the founder 2026-10-29 ~15:50 IST** (`06c097b`). Deploy + sitemap 2026-10-29 follow in
+  this session. iOS Safari share-sheet untested. **1.5 is the first Step 1 task complete.** 1.1 to 1.4 not yet posted. Still open from Step 2: pay @bbyy21's $25 credit and the Reddit reply.
 - **Next:** Step 1 (five parallel Koduo tasks) and the remaining Step 2 founder ops run together.
   Step 4 gate reads the analytics against the 2026-10-26 baseline (late December 2026).
 - **Baseline numbers (D-015, Vercel Analytics, 30 days 2026-09-26 to 2026-10-26, read 2026-10-26
@@ -55,7 +60,8 @@ plan step is what turns it into a spec; the TP ids in `TEST_PLAN.md` are what th
 | 1.4 | **Tip link.** Footer "Buy me a coffee" (D-004, platform D-009) and one short line under the fairness note, in the Tide layout (D-021). Copy is the founder's (D-005). Element id `#tipLink` so 1.2 can count clicks. | footer HTML + one line in render | Link present in both themes, print layout hides it, `test_ui` asserts id. TP-27 |
 | 1.5 | **Share the board as an image.** "Save image" button exports the SVG board (plus the player cards in fair mode) as a PNG for WhatsApp, Reddit and BGG. Include the classic sea ring (a CSS `clip-path` on `.boardwrap`, not part of the SVG) and honour the active theme. Button in the secondary row next to `#today`. Client-side only. | one function + one toolbar button | PNG downloads at 2x, matches the on-screen theme, golden untouched. TP-28..29 |
 
-- **Status:** not started. Issues drafted 2026-10-26, not yet posted.
+- **Status:** 1.5 posted 2026-10-29 as #20 (AI solver, `bounty-12.60`; the label carries Koduo's fee on top of
+  the D-010 $12). 1.1 to 1.4 drafted 2026-10-26, not yet posted.
 
 ## Step 2 — Founder ops and research, same fortnight
 Nothing here is code. Order is by what unblocks the most.
