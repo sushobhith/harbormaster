@@ -18,8 +18,8 @@ weekday time (vault `ACTION_BOARD.md`).
   themes, maps, modes): 3 must-fix (Board only row broken by the Print span, board text in Times in the PNG,
   file name without players/map) + 3 should-fix; review posted as changes requested and **fixed by the
   founder's session on the branch** (`f916bb5`, ~15:35 IST: 224/224 ui, new checks proven red first, og +
-  demo re-rendered, CLAUDE.md entry). CI green, **merged by the founder 2026-10-29 ~15:50 IST** (`06c097b`). Deploy + sitemap 2026-10-29 follow in
-  this session. iOS Safari share-sheet untested. **1.5 is the first Step 1 task complete.** 1.1 to 1.4 not yet posted. Still open from Step 2: pay @bbyy21's $25 credit and the Reddit reply.
+  demo re-rendered, CLAUDE.md entry). CI green, **merged by the founder 2026-10-29 ~15:50 IST** (`06c097b`). **Deployed 2026-10-29 ~16:00 IST** (`harbormaster-7hakzo08k`, old host
+  aliased, `verify_live` 10/10, live page serves `#saveImg`, sitemap lastmod 2026-10-29). iOS Safari share-sheet untested. **1.5 is the first Step 1 task complete.** 1.1 to 1.4 not yet posted. Still open from Step 2: pay @bbyy21's $25 credit and the Reddit reply.
 - **Next:** Step 1 (five parallel Koduo tasks) and the remaining Step 2 founder ops run together.
   Step 4 gate reads the analytics against the 2026-10-26 baseline (late December 2026).
 - **Baseline numbers (D-015, Vercel Analytics, 30 days 2026-09-26 to 2026-10-26, read 2026-10-26
