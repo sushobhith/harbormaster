@@ -513,7 +513,12 @@ const immResult = await page.evaluate(async () => {
     if (String(url).includes('woff2')) return { ok: false };
     return origFetch(url);
   };
+  const observable = () => JSON.stringify({ hash: location.hash, seed: document.getElementById('seedLabel').textContent,
+    mode: document.body.dataset.mode, map: document.body.dataset.map, cards: document.getElementById('playerCards').innerHTML,
+    pressed: [...document.querySelectorAll('[aria-pressed="true"]')].map(b => b.id || b.textContent.trim()) });
+  const liveRun = JSON.stringify(window.__hm.run('immtest', 4)); // regenerates the same seed; re-render is identical
   const liveBoard = document.getElementById('board').innerHTML;
+  const liveState = observable();
   document.getElementById('saveImg').click();
   await new Promise(res => {
     const iv = setInterval(() => {
@@ -523,9 +528,13 @@ const immResult = await page.evaluate(async () => {
   });
   window.fetch = origFetch;
   const afterBoard = document.getElementById('board').innerHTML;
-  return { boardUnchanged: liveBoard === afterBoard };
+  const afterState = observable();
+  const afterRun = JSON.stringify(window.__hm.run('immtest', 4));
+  return { boardUnchanged: liveBoard === afterBoard, stateUnchanged: liveState === afterState, runUnchanged: liveRun === afterRun, hasState: true };
 });
 check('TP-29 live #board SVG innerHTML unchanged after saveImg', immResult.boardUnchanged);
+check('TP-29 observable state unchanged after saveImg (hash, seed, mode, map, cards, pressed)', immResult.stateUnchanged);
+check('TP-29 __hm.run(seed, players) identical before and after saveImg', immResult.runUnchanged);
 
 // T4/T5: grid layout in fair and board mode
 await load('#s=gridtest&p=4');
@@ -551,6 +560,50 @@ check('T5 #saveImg visible in board mode', gridBoard.saveImgVisible);
 check('T5 #today visible in board mode', gridBoard.todayVisible);
 check('T5 #copy visible in board mode', gridBoard.copyVisible);
 check('T5 #print visible in board mode', gridBoard.printVisible);
+const rowBoard = await page.evaluate(() => {
+  const r = id => { const b = document.getElementById(id).getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width) }; };
+  return { today: r('today'), copy: r('copy'), saveImg: r('saveImg'), print: r('print') };
+});
+check('T5 Board only is a 2x2: Save image and Print share a row',
+  rowBoard.saveImg.y === rowBoard.print.y && rowBoard.print.x > rowBoard.saveImg.x,
+  JSON.stringify(rowBoard));
+check('T5 Board only is a 2x2: Print is one cell wide, not a full row',
+  rowBoard.print.w === rowBoard.copy.w, JSON.stringify(rowBoard));
+
+// TP-28: the PNG is in the current theme, and the file name carries seed, players and map
+const exportPng = async () => page.evaluate(async () => {
+  let files = null;
+  navigator.canShare = () => true;
+  navigator.share = async ({ files: f }) => { files = f; };
+  document.getElementById('saveImg').click();
+  await new Promise(res => {
+    const iv = setInterval(() => {
+      if (document.getElementById('saveImg').textContent === 'Save image') { clearInterval(iv); res(); }
+    }, 50);
+    setTimeout(() => { clearInterval(iv); res(); }, 12000);
+  });
+  if (!files || !files[0]) return { ok: false };
+  const bmp = await createImageBitmap(files[0]);
+  const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+  const ctx = c.getContext('2d'); ctx.drawImage(bmp, 0, 0);
+  const d = ctx.getImageData(2, 2, 1, 1).data;
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  return { ok: true, name: files[0].name, corner: [d[0], d[1], d[2]], bg };
+});
+const hexToRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const near = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 2);
+for (const scheme of ['dark', 'light']) {
+  await page.emulateMedia({ colorScheme: scheme });
+  await load('#s=themetest&p=4');
+  const r = await exportPng();
+  check(`TP-28 ${scheme}: PNG corner pixel is the page --bg (${r.bg})`,
+    r.ok && near(r.corner, hexToRgb(r.bg)), JSON.stringify(r));
+  check(`TP-28 ${scheme}: file name is harbormaster-themetest-4p.png`, r.ok && r.name === 'harbormaster-themetest-4p.png', r.name);
+}
+await page.emulateMedia({ colorScheme: 'light' });
+await load('#s=themetest&p=5&map=sea');
+const seaName = await exportPng();
+check('TP-28 Seafarers file name carries -sea: harbormaster-themetest-5p-sea.png', seaName.ok && seaName.name === 'harbormaster-themetest-5p-sea.png', seaName.name);
 
 // TP-43: the seed, not the clock, drives the board
 const unfrozen = await openPage(`#s=${TODAY}&p=4`, null);

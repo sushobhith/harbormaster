@@ -160,7 +160,7 @@
   .btn:active{transform:translateY(1px)}
   .row-sec{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
   .row-sec .btn{min-width:0;padding-inline:.3rem;white-space:nowrap}
-  .row-sec #print{grid-column:1 / -1}
+  body[data-mode="fair"] .row-sec #print{grid-column:1 / -1} /* 5 buttons: Print takes the last row alone; Board only has 4 and stays 2x2 */
   .chipbtn{border:1px solid var(--line);border-radius:99px;min-height:40px;padding:.35rem .85rem;
     font-weight:600}
   .chipbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -1232,6 +1232,7 @@ async function saveImage(){
     // 3. Deep-clone #board SVG and resolve var(--x) attribute values
     const origSvg=document.getElementById("board");
     const clone=origSvg.cloneNode(true);
+    clone.setAttribute("font-family","Manrope,system-ui,sans-serif"); // the board's own text (ROBBER, port labels, numbers) inherits body font on screen; the clone has no body
     function resolveVars(el){
       for(const attr of Array.from(el.attributes)){
         if(attr.value.includes("var(")){
@@ -1271,17 +1272,7 @@ async function saveImage(){
     const pairs=state.mode==="fair"&&state.placement?state.placement.pairs:null;
     let extraH=0;
     if(pairs){
-      const effs=pairs.map(p=>{
-        let v=p[0].pips+p[1].pips;
-        for(const spot of p){
-          if(!spot.port)continue;
-          if(spot.port==="any"){v+=1.0;continue;}
-          let rp=0;
-          for(const s of p)for(const[r,n]of s.chips)if(r===spot.port)rp+=PIPS[n];
-          v+=1.5+(rp>=4?0.5:0);
-        }
-        return v;
-      });
+      const effs=pairs.map(pairEff); // same start value and order as the cards
       const order=pairs.map((_,i)=>i).sort((a,b)=>effs[a]-effs[b]);
       const nRows=pairs.length;
       extraH=STRIP_PAD+nRows*ROW_H+STRIP_PAD+FOOTER_H+STRIP_PAD;
@@ -1290,6 +1281,7 @@ async function saveImage(){
         const[pname]=PLAYERCOLORS[pi];
         const pcolor=cvLookup["--p"+(pi+1)];
         const pips=pairs[pi][0].pips+pairs[pi][1].pips;
+        const portBonus=effs[pi]-pips;
         const rowY=vy+vh+STRIP_PAD+rank*ROW_H;
         const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
         rect.setAttribute("x",String(vx+STRIP_PAD));
@@ -1308,7 +1300,7 @@ async function saveImage(){
         txt.setAttribute("fill",cvLookup["--ink"]);
         const ord=rank+1;
         const ordStr=ord===1?"st":ord===2?"nd":ord===3?"rd":"th";
-        txt.textContent=`Player ${pi+1} \u00b7 ${pname} \u00b7 ${pips} pips \u00b7 plays ${ord}${ordStr}`;
+        txt.textContent=`Player ${pi+1} \u00b7 ${pname} \u00b7 ${pips} pips${portBonus>0?` +${portBonus.toFixed(1)} port`:""} \u00b7 plays ${ord}${ordStr}`;
         clone.appendChild(txt);
       }
       const footerY=vy+vh+STRIP_PAD+nRows*ROW_H+STRIP_PAD;
@@ -1373,7 +1365,7 @@ async function saveImage(){
 
     // 10. Export PNG via Web Share or download fallback
     const pngBlob=await new Promise(res=>canvas.toBlob(res,"image/png"));
-    const fname=`harbormaster-${state.seed}.png`;
+    const fname=`harbormaster-${state.seed}-${state.players}p${state.map==="sea"?"-sea":""}.png`;
     const file=new File([pngBlob],fname,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){
       await navigator.share({files:[file],title:"Harbormaster board"});
