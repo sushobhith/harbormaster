@@ -159,8 +159,8 @@
     font-size:1.02rem;border-radius:12px}
   .btn:active{transform:translateY(1px)}
   .row-sec{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-  body[data-mode="board"] .row-sec{grid-template-columns:repeat(3,1fr)}
   .row-sec .btn{min-width:0;padding-inline:.3rem;white-space:nowrap}
+  body[data-mode="fair"] .row-sec #print{grid-column:1 / -1} /* 5 buttons: Print takes the last row alone; Board only has 4 and stays 2x2 */
   .chipbtn{border:1px solid var(--line);border-radius:99px;min-height:40px;padding:.35rem .85rem;
     font-weight:600}
   .chipbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -387,6 +387,7 @@ sees the identical setup, settlements included.</p>
       <button class="btn" id="reroll">Re-draw spots</button>
       <button class="btn" id="today" aria-pressed="false">Today's board</button>
       <button class="btn" id="copy">Copy link</button>
+      <button class="btn" id="saveImg">Save image</button>
       <button class="btn" id="print">Print</button>
     </div>
     <div class="toolbar" id="options">
@@ -1202,6 +1203,186 @@ document.getElementById("allRes").onclick=e=>{
   generate(false); // same board, re-deal so everyone lands all five resources
 };
 document.getElementById("print").onclick=()=>window.print();
+async function saveImage(){
+  const btn=document.getElementById("saveImg");
+  btn.textContent="Saving\u2026";
+  try{
+    // 1. Resolve all CSS custom properties into a lookup table
+    const cs=getComputedStyle(document.documentElement);
+    const cssVars=["--bg","--ink","--muted","--line","--accent","--on-accent",
+      "--wood","--sheep","--wheat","--brick","--ore","--desert","--seahex","--gold",
+      "--tok","--tink","--ring","--edge","--port","--card","--hot",
+      "--p1","--p2","--p3","--p4","--p5","--p6"];
+    const cvLookup={};
+    for(const v of cssVars) cvLookup[v]=cs.getPropertyValue(v).trim();
+
+    // 2. Fetch Manrope font as base64 data-URI
+    let fontDataUri="";
+    try{
+      const resp=await fetch("/fonts/manrope-latin.woff2");
+      if(resp.ok){
+        const buf=await resp.arrayBuffer();
+        const bytes=new Uint8Array(buf);
+        let bin="";
+        for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+        fontDataUri="data:font/woff2;base64,"+btoa(bin);
+      }
+    }catch(_){}
+
+    // 3. Deep-clone #board SVG and resolve var(--x) attribute values
+    const origSvg=document.getElementById("board");
+    const clone=origSvg.cloneNode(true);
+    clone.setAttribute("font-family","Manrope,system-ui,sans-serif"); // the board's own text (ROBBER, port labels, numbers) inherits body font on screen; the clone has no body
+    function resolveVars(el){
+      for(const attr of Array.from(el.attributes)){
+        if(attr.value.includes("var(")){
+          let v=attr.value;
+          for(const[k,val]of Object.entries(cvLookup)){
+            v=v.replace(new RegExp("var\\("+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\)","g"),val);
+          }
+          el.setAttribute(attr.name,v);
+        }
+      }
+      for(const child of el.children) resolveVars(child);
+    }
+    resolveVars(clone);
+
+    // Parse viewBox
+    const vb=origSvg.getAttribute("viewBox").split(" ").map(Number);
+    const [vx,vy,vw,vh]=vb;
+
+    // 4. Classic map: prepend sea hexagonal ring polygon
+    if(state.map==="classic"){
+      const poly=document.createElementNS("http://www.w3.org/2000/svg","polygon");
+      const pts=[
+        [vx+vw*0.25, vy+0],
+        [vx+vw*0.75, vy+0],
+        [vx+vw,      vy+vh*0.5],
+        [vx+vw*0.75, vy+vh],
+        [vx+vw*0.25, vy+vh],
+        [vx+0,       vy+vh*0.5]
+      ];
+      poly.setAttribute("points",pts.map(p=>p.join(",")).join(" "));
+      poly.setAttribute("fill",cvLookup["--seahex"]);
+      clone.insertBefore(poly,clone.firstChild);
+    }
+
+    // 5. Player strip and footer appended below the board
+    const STRIP_PAD=14, ROW_H=22, SWATCH=13, FONT_SIZE=13, FOOTER_H=20;
+    const pairs=state.mode==="fair"&&state.placement?state.placement.pairs:null;
+    let extraH=0;
+    if(pairs){
+      const effs=pairs.map(pairEff); // same start value and order as the cards
+      const order=pairs.map((_,i)=>i).sort((a,b)=>effs[a]-effs[b]);
+      const nRows=pairs.length;
+      extraH=STRIP_PAD+nRows*ROW_H+STRIP_PAD+FOOTER_H+STRIP_PAD;
+      for(let rank=0;rank<order.length;rank++){
+        const pi=order[rank];
+        const[pname]=PLAYERCOLORS[pi];
+        const pcolor=cvLookup["--p"+(pi+1)];
+        const pips=pairs[pi][0].pips+pairs[pi][1].pips;
+        const portBonus=effs[pi]-pips;
+        const rowY=vy+vh+STRIP_PAD+rank*ROW_H;
+        const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+        rect.setAttribute("x",String(vx+STRIP_PAD));
+        rect.setAttribute("y",String(rowY));
+        rect.setAttribute("width",String(SWATCH));
+        rect.setAttribute("height",String(SWATCH));
+        rect.setAttribute("rx","3");
+        rect.setAttribute("fill",pcolor);
+        clone.appendChild(rect);
+        const txt=document.createElementNS("http://www.w3.org/2000/svg","text");
+        txt.setAttribute("x",String(vx+STRIP_PAD+SWATCH+6));
+        txt.setAttribute("y",String(rowY+FONT_SIZE-1));
+        txt.setAttribute("font-size",String(FONT_SIZE));
+        txt.setAttribute("font-weight","600");
+        txt.setAttribute("font-family",'Manrope,system-ui,sans-serif');
+        txt.setAttribute("fill",cvLookup["--ink"]);
+        const ord=rank+1;
+        const ordStr=ord===1?"st":ord===2?"nd":ord===3?"rd":"th";
+        txt.textContent=`Player ${pi+1} \u00b7 ${pname} \u00b7 ${pips} pips${portBonus>0?` +${portBonus.toFixed(1)} port`:""} \u00b7 plays ${ord}${ordStr}`;
+        clone.appendChild(txt);
+      }
+      const footerY=vy+vh+STRIP_PAD+nRows*ROW_H+STRIP_PAD;
+      const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"");
+      const ftxt=document.createElementNS("http://www.w3.org/2000/svg","text");
+      ftxt.setAttribute("x",String(vx+STRIP_PAD));
+      ftxt.setAttribute("y",String(footerY+FOOTER_H-4));
+      ftxt.setAttribute("font-size","10");
+      ftxt.setAttribute("font-weight","500");
+      ftxt.setAttribute("font-family",'Manrope,system-ui,sans-serif');
+      ftxt.setAttribute("fill",cvLookup["--muted"]);
+      ftxt.textContent=`https://harbormaster.fyi/#s=${state.seed}&p=${state.players}${mp}`;
+      clone.appendChild(ftxt);
+    }else{
+      extraH=FOOTER_H+STRIP_PAD*2;
+      const footerY=vy+vh+STRIP_PAD;
+      const mp=(state.mode==="board"?"&m=board":"")+(state.map==="sea"?"&map=sea":"");
+      const ftxt=document.createElementNS("http://www.w3.org/2000/svg","text");
+      ftxt.setAttribute("x",String(vx+STRIP_PAD));
+      ftxt.setAttribute("y",String(footerY+FOOTER_H-4));
+      ftxt.setAttribute("font-size","10");
+      ftxt.setAttribute("font-weight","500");
+      ftxt.setAttribute("font-family",'Manrope,system-ui,sans-serif');
+      ftxt.setAttribute("fill",cvLookup["--muted"]);
+      ftxt.textContent=`https://harbormaster.fyi/#s=${state.seed}&p=${state.players}${mp}`;
+      clone.appendChild(ftxt);
+    }
+
+    // 7. Prepend font @font-face <style> into <defs>
+    if(fontDataUri){
+      let defs=clone.querySelector("defs");
+      if(!defs){
+        defs=document.createElementNS("http://www.w3.org/2000/svg","defs");
+        clone.insertBefore(defs,clone.firstChild);
+      }
+      const styleEl=document.createElementNS("http://www.w3.org/2000/svg","style");
+      styleEl.textContent=`@font-face{font-family:"Manrope";font-style:normal;font-weight:200 800;src:url(${fontDataUri}) format("woff2");}`;
+      defs.insertBefore(styleEl,defs.firstChild);
+    }
+
+    // 8. Adjust viewBox height
+    const newVH=vh+extraH;
+    clone.setAttribute("viewBox",`${vx} ${vy} ${vw} ${newVH}`);
+    clone.setAttribute("width",String(vw));
+    clone.setAttribute("height",String(newVH));
+
+    // 9. Serialise SVG, draw to 2x canvas
+    const serial=new XMLSerializer().serializeToString(clone);
+    const svgBlob=new Blob([serial],{type:"image/svg+xml;charset=utf-8"});
+    const svgUrl=URL.createObjectURL(svgBlob);
+    const img=new Image();
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=svgUrl;});
+    const scale=2;
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.round(vw*scale);
+    canvas.height=Math.round(newVH*scale);
+    const ctx2=canvas.getContext("2d");
+    ctx2.fillStyle=cvLookup["--bg"]||"#f2eee5";
+    ctx2.fillRect(0,0,canvas.width,canvas.height);
+    ctx2.drawImage(img,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(svgUrl);
+
+    // 10. Export PNG via Web Share or download fallback
+    const pngBlob=await new Promise(res=>canvas.toBlob(res,"image/png"));
+    const fname=`harbormaster-${state.seed}-${state.players}p${state.map==="sea"?"-sea":""}.png`;
+    const file=new File([pngBlob],fname,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:"Harbormaster board"});
+    }else{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(pngBlob);
+      a.download=fname;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{URL.revokeObjectURL(a.href);document.body.removeChild(a);},2000);
+    }
+  }catch(e){
+    console.error("saveImage error",e);
+  }
+  btn.textContent="Save image";
+}
+document.getElementById("saveImg").onclick=saveImage;
 document.getElementById("mode").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   document.querySelectorAll("#mode button").forEach(x=>x.setAttribute("aria-pressed",x===b));

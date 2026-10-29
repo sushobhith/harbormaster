@@ -232,8 +232,18 @@ submission, Bing import, Reddit/BGG backlinks.
 ## Toolbar extras (2026-07-09)
 
 - **Today's board** (`#today`, added 2026-10-28, D-031/D-034): secondary row, between `#reroll` and
-  `#copy`; the row is a 2×2 grid, three columns in Board only (`body[data-mode]` is set in `generate()`).
+  `#copy`; the row is a 2-column grid (`body[data-mode]` is set in `generate()`).
   Copy strings (button, cheat-sheet bullet, FAQ + JSON-LD) are D-034.
+- **Save image** (`#saveImg`, added 2026-10-29, ROADMAP Step 1.5, Koduo issue #20 / PR #21): secondary
+  row between `#copy` and `#print`; five buttons in fair mode, so `#print` spans the last row alone
+  (`body[data-mode="fair"]` only; Board only hides `#reroll` and stays 2×2). `saveImage()` clones the
+  `#board` SVG, resolves every `var(--x)` from computed style, sets `font-family` on the clone root and
+  inlines `fonts/manrope-latin.woff2` as a data-URI `@font-face` (fetched at export time, system-ui if
+  that fails), draws the classic sea ring as a polygon (same hexagon as the `.boardwrap` clip-path),
+  appends a player strip in turn order (`pairEff`, same start value as the cards) in fair mode and a
+  footer line with the canonical share link, rasterises at 2× and hands the PNG to `navigator.share`
+  when files are shareable, else downloads `harbormaster-<seed>-<players>p[-sea].png`. Reads state
+  only (TP-29); `test_ui` covers order, grid, PNG size, theme pixel, file name (TP-28).
 
 - **No port starts** (`#noPorts`, hash `&np=1`, fair mode only): filters port vertices out of
   settlement candidates in `drawSettlements` (6th arg). Falls back to allowing ports if a
